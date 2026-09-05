@@ -159,10 +159,29 @@ function HeroState() {
             esac
             ;;
 
-        # Usage: HeroState sound [get|set|toggle|status|play]
+        # Usage: HeroState sound [interactive|toggle|on|off|volume|status|play|get|<val>]
         sound)
-            local op="${1:-status}"; shift
+            local op="$1"
+            if [[ -z "$op" ]]; then
+                if [[ -t 0 && -t 1 ]]; then
+                    op="interactive"
+                else
+                    op="status"
+                fi
+            else
+                shift
+            fi
+
             case "$op" in
+                interactive|menu|ui)
+                    local bin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/bin"
+                    if [[ -x "$bin_dir/hero-sound" ]]; then
+                        "$bin_dir/hero-sound" interactive
+                        if [[ -f "$hero_volume_file" ]]; then
+                            export HERO_VOLUME="$(<"$hero_volume_file")"
+                        fi
+                    fi
+                    ;;
                 get)
                     if [[ -n "$HERO_SECRET_SOUND" ]]; then
                         if [[ "$HERO_SECRET_SOUND" =~ ^(0|off|false|no)$ ]]; then
@@ -190,10 +209,21 @@ function HeroState() {
                         echo "1" >| "$hero_sound_file" 2>/dev/null
                     fi
                     ;;
+                on|enable)
+                    HeroState sound set 1
+                    print -P "%F{green}🔊 Zelda secret sound enabled!%f"
+                    HeroState sound play
+                    ;;
+                off|disable)
+                    HeroState sound set 0
+                    pkill -f "hero-song-of-time" 2>/dev/null || true
+                    print -P "%F{yellow}🔇 Zelda secret sound disabled.%f"
+                    ;;
                 toggle)
                     local -i current=$(HeroState sound get)
                     if (( current == 1 )); then
                         HeroState sound set 0
+                        pkill -f "hero-song-of-time" 2>/dev/null || true
                         print -P "%F{yellow}🔇 Zelda secret sound disabled.%f"
                     else
                         HeroState sound set 1
@@ -201,12 +231,50 @@ function HeroState() {
                         HeroState sound play
                     fi
                     ;;
+                vol|volume)
+                    local v_arg="$1"
+                    if [[ -z "$v_arg" || "$v_arg" == "get" ]]; then
+                        local vol=""
+                        if [[ -f "$hero_volume_file" ]]; then
+                            vol="$(<"$hero_volume_file")"
+                        elif [[ -n "$HERO_VOLUME" ]]; then
+                            vol="$HERO_VOLUME"
+                        fi
+                        echo "${vol:-15}"
+                    else
+                        local -i target_v=${v_arg//[^0-9]/}
+                        (( target_v < 0 )) && target_v=0
+                        (( target_v > 100 )) && target_v=100
+                        echo "$target_v" >| "$hero_volume_file" 2>/dev/null
+                        export HERO_VOLUME="$target_v"
+                        print -P "%F{green}🎚️ Volume set to ${target_v}%%%f"
+                        if (( $(HeroState sound get) == 1 )); then
+                            HeroState sound play startup
+                        fi
+                    fi
+                    ;;
+                +|vol-up|up)
+                    local -i step=${1:-5}
+                    local -i cur_v=$(HeroState sound volume)
+                    HeroState sound volume $(( cur_v + step ))
+                    ;;
+                -|vol-down|down)
+                    local -i step=${1:-5}
+                    local -i cur_v=$(HeroState sound volume)
+                    HeroState sound volume $(( cur_v - step ))
+                    ;;
                 status)
                     local -i current=$(HeroState sound get)
-                    if (( current == 1 )); then
-                        print -P "%F{green}🔊 Zelda secret sound is ON%f"
+                    local -i cur_v=$(HeroState sound volume)
+                    local bin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/bin"
+                    if [[ -x "$bin_dir/hero-sound" ]]; then
+                        "$bin_dir/hero-sound" status
                     else
-                        print -P "%F{yellow}🔇 Zelda secret sound is OFF%f"
+                        if (( current == 1 )); then
+                            print -P "%F{green}🔊 Zelda secret sound is ON%f (Volume: ${cur_v}%%)"
+                        else
+                            print -P "%F{yellow}🔇 Zelda secret sound is OFF%f (Volume: ${cur_v}%%)"
+                        fi
                     fi
                     ;;
                 play)
@@ -214,6 +282,26 @@ function HeroState() {
                     local bin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/bin"
                     if [[ -x "$bin_dir/hero-song-of-time" ]]; then
                         "$bin_dir/hero-song-of-time" "$song" >/dev/null 2>&1 &|
+                    fi
+                    ;;
+                test)
+                    HeroState sound play startup
+                    ;;
+                stop)
+                    pkill -f "hero-song-of-time" 2>/dev/null || true
+                    print -P "%F{yellow}⏹️ Audio stopped.%f"
+                    ;;
+                whistle|warp)
+                    HeroState sound play whistle
+                    ;;
+                <0-100>)
+                    HeroState sound volume "$op"
+                    ;;
+                *)
+                    if [[ "$op" =~ ^[0-9]+$ ]]; then
+                        HeroState sound volume "$op"
+                    else
+                        print -P "Usage: HeroState sound [interactive|toggle|on|off|vol [0-100]|status|play [song]|test|stop]"
                     fi
                     ;;
             esac

@@ -36,8 +36,10 @@ source "$HERO_THEME_DIR/prompt.zsh"
 # 4. Top-Level Command Aliases
 alias o='HeroInventory open'
 alias st='HeroState cycle reset'
-alias snd='HeroState sound toggle'
-alias sound='HeroState sound toggle'
+alias snd='HeroState sound'
+alias sound='HeroState sound'
+function snd() { HeroState sound "$@"; }
+function sound() { HeroState sound "$@"; }
 alias hpad='HeroState heart_pad toggle'
 function hpad() { HeroState heart_pad toggle "$@"; }
 alias z+='z; if command -v hero-magic-chest >/dev/null 2>&1; then hero-magic-chest; else bash -c "$(curl -fsSL https://raw.githubusercontent.com/Knerd/hero-bin/master/hero-magic-chest)"; fi'

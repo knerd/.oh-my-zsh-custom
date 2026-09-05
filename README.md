@@ -463,13 +463,25 @@ Different terminal emulators handle Unicode emoji widths differently (Linux glib
 hpad        # Toggles between Linux/glibc padding and modern Unicode 9+ mode
 ```
 
-### 🔊 Audio Chime Controls (`snd` / `sound`)
-Toggle the 8-bit audio synthesizers on startup and menu operations:
+### 🔊 Interactive Audio & Volume Controls (`snd` / `sound`)
+Hero of Legend features a full 16-bit sound fountain and synthesizer powered by Charmbracelet `gum`:
 ```bash
-snd         # Toggles Zelda startup chime ON or OFF
+snd         # Opens interactive toggle, volume slider, and ocarina jukebox
 ```
 
-Set custom volume (1-100) in your `~/.zshrc`:
+#### CLI Quick Commands
+You can also control audio directly without opening the interactive menu:
+```bash
+snd toggle      # Toggles sound ON or OFF immediately
+snd on / off    # Force sound ON or OFF
+snd 30          # Set volume percentage to 30% (persisted in ~/.hero_volume)
+snd + / -       # Nudge volume up or down (+5% / -5%)
+snd status      # Display current audio state and visual volume meter
+snd test        # Play test chime at current volume
+snd play storms # Play any ocarina song (startup, time, storms, healing, whistle)
+```
+
+You can also set custom default volume via environment variable in your `~/.zshrc`:
 ```bash
 export HERO_VOLUME=25
 ```

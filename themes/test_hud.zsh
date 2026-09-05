@@ -262,6 +262,194 @@ function test_item_hud_alignment() {
     HeroState heart_pad set 1
 }
 
+function test_equipment_screen_alignment() {
+    local all_passed=1
+    local pad
+    local wl=36 wr=36
+    local -a left_lines right_lines
+    local left_clr right_clr
+    local -a s
+    local -i i
+    local k
+
+    for pad in 1 0; do
+        HeroState heart_pad set $pad
+        local mode_desc="Linux/glibc (padded)"
+        (( pad == 0 )) && mode_desc="macOS/Unicode 9+ (unpadded)"
+
+        left_lines=()
+        right_lines=()
+        left_clr=""
+        right_clr=""
+
+        # Test helper using the inventory theme logic
+        HeroInventory init
+        HeroState slots persist 1 "backpack"
+        HeroState slots persist 2 "key"
+
+        s=("⬛  " "⬛  " "⬛  " "⬛  ")
+        for i in 1 2 3 4; do
+            k=$(HeroState slots get $i)
+            if [[ -n "$k" ]]; then
+                s[$i]="$(HeroInventory get "$k" icon)$(printf '%-2s' "$(HeroInventory get "$k" button)")"
+            fi
+        done
+
+        _t_box_line() {
+            local content="$1" color="$2" width="$3"
+            local -i cw=$(heroVisualWidth "$content")
+            local -i p=$(( width - 4 - cw ))
+            (( p < 0 )) && p=0
+            local pad_spaces="${(l:p:: :):-}"
+            local left_border="%F{$color}║%f "
+            local right_border=" %F{$color}║%f"
+            echo "${(%)left_border}${content}${pad_spaces}${(%)right_border}"
+        }
+
+        _t_box_header() {
+            local cat_id="$1" width="$2" type="$3" title_override="$4"
+            local cat_data="${hero_categories[$cat_id]}"
+            local h_icon h_title h_color h_array_name h_menu_label
+            if [[ -n "$cat_data" ]]; then
+                IFS='|' read -r h_icon h_title h_color h_array_name h_menu_label <<< "$cat_data"
+            else
+                h_icon="❓" h_title="$cat_id" h_color="240"
+            fi
+            [[ -n "$title_override" ]] && h_title="$title_override"
+            local char="─" start="╓" end="╖" mid="─"
+            case "$type" in
+                top)    start="╓" end="╖" mid="─" ;;
+                mid)    start="╟" end="╢" mid="─" ;;
+                double) start="╠" end="╣" mid="═"; char="═" ;;
+            esac
+            local -i tw=$(heroVisualWidth "$h_title")
+            local -i dash_count=$(( width - 5 - tw ))
+            (( dash_count < 0 )) && dash_count=0
+            local dashes=$(printf "${char}%.0s" {1..$dash_count})
+            local line="%F{$h_color}${start}${mid} ${h_title} ${dashes}${end}%f"
+            echo "${(%)line}"
+        }
+
+        _t_box_bottom() {
+            local color="$1" width="$2"
+            local -i dash_count=$(( width - 2 ))
+            local dashes=$(printf '─%.0s' {1..$dash_count})
+            local line="%F{$color}╙${dashes}╜%f"
+            echo "${(%)line}"
+        }
+
+        _t_render_col() {
+            local side_arr_name="$1" width="$2" out_arr_name="$3" out_clr_name="$4"
+            local -a side_arr=("${(@P)side_arr_name}")
+            local last_clr="240" idx=1
+            local -a lines=()
+            local cID l
+            for cID in "${side_arr[@]}"; do
+                if [[ "$cID" == "equipped" ]]; then
+                    local l_data="${hero_categories[legend]:-🛡️|Legend|220|hero_cat_legend|Legend}"
+                    local e_clr="${${${l_data#*|*}#*|*}%%|*}"
+                    local h_type="mid"; (( idx == 1 )) && h_type="top"
+                    lines+=("$(_t_box_header legend "$width" "$h_type" "Equipped")")
+                    lines+=("$(_t_box_line "${s[1]}  ${s[2]}  ${s[3]}  ${s[4]}" "$e_clr" "$width")")
+                    last_clr="$e_clr"
+                    (( idx++ ))
+                    continue
+                fi
+                local m_data="${hero_categories[$cID]}"
+                [[ -z "$m_data" ]] && continue
+                local m_clr="${${${m_data#*|*}#*|*}%%|*}"
+                local h_type="mid"; (( idx == 1 )) && h_type="top"
+                [[ "$cID" == "do" ]] && h_type="double"
+                lines+=("$(_t_box_header "$cID" "$width" "$h_type")")
+                local c_icons="$(HeroUI category_icons "$cID" 5)"
+                while IFS= read -r l; do
+                    [[ -n "$l" ]] && lines+=("$(_t_box_line "$l" "$m_clr" "$width")")
+                done <<< "$c_icons"
+                last_clr="$m_clr"
+                (( idx++ ))
+            done
+            eval "${out_arr_name}=(\"\${lines[@]}\")"
+            eval "${out_clr_name}=\"\$last_clr\""
+        }
+
+        _t_render_col hero_menu_left "$wl" left_lines left_clr
+        _t_render_col hero_menu_right "$wr" right_lines right_clr
+
+        local -i max_content=${#left_lines[@]}
+        (( ${#right_lines[@]} > max_content )) && max_content=${#right_lines[@]}
+
+        while (( ${#left_lines[@]} < max_content )); do
+            left_lines+=("$(_t_box_line "" "$left_clr" "$wl")")
+        done
+        while (( ${#right_lines[@]} < max_content )); do
+            right_lines+=("$(_t_box_line "" "$right_clr" "$wr")")
+        done
+
+        left_lines+=("$(_t_box_bottom "$left_clr" "$wl")")
+        right_lines+=("$(_t_box_bottom "$right_clr" "$wr")")
+
+        if (( ${#left_lines[@]} != ${#right_lines[@]} )); then
+            echo "  FAIL ($mode_desc): Column line count mismatch (${#left_lines[@]} vs ${#right_lines[@]})"
+            all_passed=0
+        fi
+
+        local col_err=0
+        for ((idx=1; idx<=${#left_lines[@]}; idx++)); do
+            local wl_actual=$(heroVisualWidth "${left_lines[idx]}")
+            local wr_actual=$(heroVisualWidth "${right_lines[idx]}")
+            if (( wl_actual != wl || wr_actual != wr )); then
+                echo "  FAIL ($mode_desc row $idx): wl=$wl_actual (expected $wl), wr=$wr_actual (expected $wr)"
+                col_err=1
+                all_passed=0
+            fi
+        done
+
+        if (( col_err == 0 )); then
+            echo "  PASS ($mode_desc): Equipment HUD columns are aligned at width 36 across all ${#left_lines[@]} rows."
+        fi
+    done
+    HeroState heart_pad set 1
+
+    # Dev artifact check: Category selection loop must produce clean output
+    local -a menu_options
+    local -a all_cats=("${hero_menu_left[@]}" "${hero_menu_right[@]}")
+    local cID m_data m_icon m_title m_clr m_arr m_label
+    local loop_output=$(
+        for cID in "${all_cats[@]}"; do
+            [[ "$cID" == "equipped" ]] && continue
+            m_data="${hero_categories[$cID]}"
+            [[ -z "$m_data" ]] && continue
+            IFS='|' read -r m_icon m_title m_clr m_arr m_label <<< "$m_data"
+            [[ -z "$m_label" ]] && m_label="$m_title"
+            menu_options+=("$m_icon  $m_label")
+        done
+    )
+
+    if [[ -n "$loop_output" ]]; then
+        echo "  FAIL: Dev artifacts detected during category generation: '$loop_output'"
+        all_passed=0
+    else
+        echo "  PASS: Zero dev artifacts emitted during category option processing."
+    fi
+}
+
+function test_menu_esc_option() {
+    local inv_file="$ZSH_CUSTOM/themes/hero-of-legend/inventory.zsh"
+    if grep -q '"❌  Exit Chamber (Esc)"' "$inv_file"; then
+        echo "  PASS: Main menu option includes '❌  Exit Chamber (Esc)'"
+    else
+        echo "  FAIL: Main menu option does not include '❌  Exit Chamber (Esc)'"
+        all_passed=0
+    fi
+
+    if grep -q '\*"Esc"\*|\*"Exit Chamber"\*)' "$inv_file"; then
+        echo "  PASS: Case statement pattern matches *\"Esc\"*|*\"Exit Chamber\"*"
+    else
+        echo "  FAIL: Case statement does not properly match Esc"
+        all_passed=0
+    fi
+}
+
 echo "\n========== VERIFICATION OUTPUT =========="
 
 echo "\n[TEST] Refined Color Logic Check"
@@ -282,4 +470,11 @@ test_hud_box_alignment_nongit
 echo "\n[TEST] Item HUD Alignment Check ('z' / 'hud')"
 test_item_hud_alignment
 
+echo "\n[TEST] Equipment Screen HUD Alignment & Clean Output Check"
+test_equipment_screen_alignment
+
+echo "\n[TEST] Main Menu Esc Option Check ('o')"
+test_menu_esc_option
+
 echo "\n========== END VERIFICATION =========="
+

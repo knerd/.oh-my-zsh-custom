@@ -101,9 +101,10 @@ function HeroInventory() {
             echo ""
             
             local -i sound_state=$(HeroState sound get)
-            local sound_label="🔊  Secret Sound: ON (Toggle)"
+            local -i vol_level=$(HeroState sound volume)
+            local sound_label="🔊  Audio & Volume Settings (${vol_level}% - ON)"
             if (( sound_state == 0 )); then
-                sound_label="🔇  Secret Sound: OFF (Toggle)"
+                sound_label="🔇  Audio & Volume Settings (${vol_level}% - OFF)"
             fi
 
             local main_choice
@@ -118,7 +119,7 @@ function HeroInventory() {
                 "🗑️  Unequip Slot" \
                 "📜  View All Items" \
                 "$sound_label" \
-                "❌  Exit Chamber")
+                "❌  Exit Chamber (Esc)")
             
             if [[ -z "$main_choice" ]]; then
                 HeroInventory _stop_sound
@@ -139,13 +140,12 @@ function HeroInventory() {
                     HeroInventory _view_all_items
                     HeroInventory _equip_with_gum
                     ;;
-                "$sound_label")
-                    HeroState sound toggle
+                *"Audio & Volume Settings"*|"$sound_label")
                     HeroInventory _stop_sound
-                    sleep 0.8
+                    HeroState sound interactive
                     HeroInventory _equip_with_gum
                     ;;
-                "❌  Exit Chamber")
+                *"Esc"*|*"Exit Chamber"*)
                     HeroInventory _stop_sound
                     gum style --foreground 245 --italic "  Safe travels, Hero!"
                     return
@@ -168,13 +168,17 @@ function HeroInventory() {
             done
 
             local -i wl=36
-            local -i wr=30
+            local -i wr=36
             
             _hero_box_line() {
                 local content="$1" color="$2" width="$3"
-                local body=$(gum style --foreground 255 --width $((width - 4)) "$content")
-                local raw="%F{$color}║%f $body %F{$color}║%f"
-                echo "${(%)raw}"
+                local -i cw=$(heroVisualWidth "$content")
+                local -i pad=$(( width - 4 - cw ))
+                (( pad < 0 )) && pad=0
+                local pad_spaces="${(l:pad:: :):-}"
+                local left_border="%F{$color}║%f "
+                local right_border=" %F{$color}║%f"
+                echo "${(%)left_border}${content}${pad_spaces}${(%)right_border}"
             }
             
             _hero_box_header() {
@@ -195,24 +199,36 @@ function HeroInventory() {
                     double) start="╠" end="╣" mid="═"; char="═" ;;
                 esac
                 
-                local -i dash_count=$(( width - 5 - ${#h_title} ))
+                local -i tw=$(heroVisualWidth "$h_title")
+                local -i dash_count=$(( width - 5 - tw ))
                 (( dash_count < 0 )) && dash_count=0
-                local line="%F{$h_color}${start}${mid} ${h_title} $(printf "${char}%.0s" {1..$dash_count})${end}%f"
+                local dashes=$(printf "${char}%.0s" {1..$dash_count})
+                local line="%F{$h_color}${start}${mid} ${h_title} ${dashes}${end}%f"
+                echo "${(%)line}"
+            }
+
+            _hero_box_bottom() {
+                local color="$1" width="$2"
+                local -i dash_count=$(( width - 2 ))
+                local dashes=$(printf '─%.0s' {1..$dash_count})
+                local line="%F{$color}╙${dashes}╜%f"
                 echo "${(%)line}"
             }
 
             _render_hud_column() {
-                local side_arr_name="$1" width="$2"
+                local side_arr_name="$1" width="$2" out_arr_name="$3" out_clr_name="$4"
                 local -a side_arr=("${(@P)side_arr_name}")
-                local out="" last_clr="240" idx=1
+                local last_clr="240" idx=1
+                local -a lines=()
+                local cID l
                 
                 for cID in "${side_arr[@]}"; do
                     if [[ "$cID" == "equipped" ]]; then
                         local l_data="${hero_categories[legend]:-🛡️|Legend|220|hero_cat_legend|Legend}"
                         local e_clr="${${${l_data#*|*}#*|*}%%|*}"
                         local h_type="mid"; (( idx == 1 )) && h_type="top"
-                        out+=$(_hero_box_header legend "$width" "$h_type" "Equipped")$'\n'
-                        out+=$(_hero_box_line "${s[1]}  ${s[2]}  ${s[3]}  ${s[4]}" "$e_clr" "$width")$'\n'
+                        lines+=("$(_hero_box_header legend "$width" "$h_type" "Equipped")")
+                        lines+=("$(_hero_box_line "${s[1]}  ${s[2]}  ${s[3]}  ${s[4]}" "$e_clr" "$width")")
                         last_clr="$e_clr"
                         (( idx++ ))
                         continue
@@ -225,35 +241,53 @@ function HeroInventory() {
                     local h_type="mid"; (( idx == 1 )) && h_type="top"
                     [[ "$cID" == "do" ]] && h_type="double"
                     
-                    out+=$(_hero_box_header "$cID" "$width" "$h_type")$'\n'
+                    lines+=("$(_hero_box_header "$cID" "$width" "$h_type")")
                     local c_icons="$(HeroUI category_icons "$cID" 5)"
-                    while read -r l; do
-                        [[ -n "$l" ]] && out+=$(_hero_box_line "$l" "$m_clr" "$width")$'\n'
+                    while IFS= read -r l; do
+                        [[ -n "$l" ]] && lines+=("$(_hero_box_line "$l" "$m_clr" "$width")")
                     done <<< "$c_icons"
                     last_clr="$m_clr"
                     (( idx++ ))
                 done
-                [[ -n "$out" ]] && out+=$(print -P "%F{$last_clr}╙$(printf '─%.0s' {1..$((width-2))})╜%f")
-                echo -n "$out"
+                
+                eval "${out_arr_name}=(\"\${lines[@]}\")"
+                eval "${out_clr_name}=\"\$last_clr\""
             }
 
-            local left_out="$(_render_hud_column hero_menu_left "$wl")"
-            local right_out="$(_render_hud_column hero_menu_right "$wr")"
-            local full_hud=$(gum join --horizontal --align top "$left_out" "  " "$right_out")
-            
+            local -a left_lines right_lines
+            local left_clr right_clr
+            _render_hud_column hero_menu_left "$wl" left_lines left_clr
+            _render_hud_column hero_menu_right "$wr" right_lines right_clr
+
+            local -i max_content=${#left_lines[@]}
+            (( ${#right_lines[@]} > max_content )) && max_content=${#right_lines[@]}
+
+            while (( ${#left_lines[@]} < max_content )); do
+                left_lines+=("$(_hero_box_line "" "$left_clr" "$wl")")
+            done
+            while (( ${#right_lines[@]} < max_content )); do
+                right_lines+=("$(_hero_box_line "" "$right_clr" "$wr")")
+            done
+
+            left_lines+=("$(_hero_box_bottom "$left_clr" "$wl")")
+            right_lines+=("$(_hero_box_bottom "$right_clr" "$wr")")
+
             echo ""
-            echo "$full_hud"
+            local -i row_idx
+            for ((row_idx=1; row_idx<=${#left_lines[@]}; row_idx++)); do
+                echo "${left_lines[row_idx]}  ${right_lines[row_idx]}"
+            done
             echo ""
 
             # Category Selection
             local -a menu_options
             local -a all_cats=("${hero_menu_left[@]}" "${hero_menu_right[@]}")
+            local cID m_data m_icon m_title m_clr m_arr m_label
             for cID in "${all_cats[@]}"; do
                 [[ "$cID" == "equipped" ]] && continue
-                local m_data="${hero_categories[$cID]}"
+                m_data="${hero_categories[$cID]}"
                 [[ -z "$m_data" ]] && continue
                 
-                local m_icon m_title m_clr m_arr m_label
                 IFS='|' read -r m_icon m_title m_clr m_arr m_label <<< "$m_data"
                 [[ -z "$m_label" ]] && m_label="$m_title"
                 menu_options+=("$m_icon  $m_label")
@@ -274,10 +308,10 @@ function HeroInventory() {
             if [[ "$category" == "🔎  Search All Items" ]]; then
                 item_list=(${(k)hero_registry})
             else
+                local cat_id cat_data icon title clr arr
                 for cat_id in ${(k)hero_categories}; do
-                    local cat_data="${hero_categories[$cat_id]}"
+                    cat_data="${hero_categories[$cat_id]}"
                     if [[ "$cat_data" == *"${category#*  }"* ]]; then
-                        local icon title clr arr m_label
                         IFS='|' read -r icon title clr arr m_label <<< "$cat_data"
                         item_list=("${(@P)arr}")
                         break
@@ -294,11 +328,12 @@ function HeroInventory() {
             echo ""
             
             local -a display_items
+            local item_key item_icon item_name item_btn
             for item_key in "${item_list[@]}"; do
-                local icon=$(HeroInventory get "$item_key" icon)
-                local name=$(HeroInventory get "$item_key" name)
-                local btn=$(HeroInventory get "$item_key" button)
-                display_items+=("$icon  $name [$btn]")
+                item_icon=$(HeroInventory get "$item_key" icon)
+                item_name=$(HeroInventory get "$item_key" name)
+                item_btn=$(HeroInventory get "$item_key" button)
+                display_items+=("$item_icon  $item_name [$item_btn]")
             done
             display_items+=("⬅️   Back to Categories")
             
@@ -322,10 +357,12 @@ function HeroInventory() {
             
             [[ -z "$selected_display" || "$selected_display" == "⬅️   Back to Categories" ]] && { HeroInventory _equip_item_flow; return; }
             
-            local selected_item=""
+            local selected_item="" item_key icon name btn
             for item_key in "${item_list[@]}"; do
-                local icon=$(HeroInventory get "$item_key" icon)
-                if [[ "$selected_display" == "$icon"* ]]; then
+                icon=$(HeroInventory get "$item_key" icon)
+                name=$(HeroInventory get "$item_key" name)
+                btn=$(HeroInventory get "$item_key" button)
+                if [[ "$selected_display" == "$icon  $name [$btn]"* || "$selected_display" == "$icon"* ]]; then
                     selected_item="$item_key"
                     break
                 fi
@@ -378,11 +415,12 @@ function HeroInventory() {
             
             local -a slot_choices
             local -i slot_num
+            local current_item cur_icon cur_name
             for slot_num in 1 2 3 4; do
-                local current_item=$(HeroState slots get $slot_num)
+                current_item=$(HeroState slots get $slot_num)
                 if [[ -n "$current_item" ]]; then
-                    local cur_icon=$(HeroInventory get "$current_item" icon)
-                    local cur_name=$(HeroInventory get "$current_item" name)
+                    cur_icon=$(HeroInventory get "$current_item" icon)
+                    cur_name=$(HeroInventory get "$current_item" name)
                     slot_choices+=("Slot $slot_num: $cur_icon $cur_name (will replace)")
                 else
                     slot_choices+=("Slot $slot_num: ⬜ Empty")

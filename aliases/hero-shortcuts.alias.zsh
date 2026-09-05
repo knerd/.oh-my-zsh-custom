@@ -65,7 +65,10 @@ alias i="((HERO_HIDE_ITEMS=!HERO_HIDE_ITEMS)); CL;"
 alias c="((HERO_HIDE_CLOCK=!HERO_HIDE_CLOCK)); CL;"
 alias n="((HERO_HIDE_NAVI=!HERO_HIDE_NAVI)); CL;"
 alias i-="((HERO_HIDE_EVERYTHING=!HERO_HIDE_EVERYTHING));((HERO_HIDE_ITEMS=HERO_HIDE_EVERYTHING)); CL;"
-alias snd="HeroState sound toggle"
+alias snd="HeroState sound"
+alias sound="HeroState sound"
+function snd() { HeroState sound "$@"; }
+function sound() { HeroState sound "$@"; }
 
 # Clear terminal show hud
 alias z="CL; hud"
@@ -331,7 +334,7 @@ declare -gA HERO_HELP=(
     [R]="💍 R  - Blue Ring: Reload your .zshrc and refresh the magic."
     [L]="🏮 L  - Magic Lantern: List all files including hidden ones (ls -la)."
     ["z+"]="🧰 z+ - Magic Chest: Open the chest to download/update Hero tools."
-    [snd]="🔊 snd - Sound: Toggle Zelda secret sound on startup on/off"
+    [snd]="🔊 snd - Sound: Interactive toggle, volume control & sound test"
 )
 
 # Help

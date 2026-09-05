@@ -35,6 +35,7 @@ typeset -g hero_wallet_file="$(_hero_resolve_state_file "$_default_wallet" "wall
 typeset -g hero_cycle_file="$(_hero_resolve_state_file "${HERO_CYCLE_FILE:-$HOME/.hero_cycle}" "cycle")"
 typeset -g hero_slots_file="$(_hero_resolve_state_file "${HERO_SLOTS_FILE:-$HOME/.hero_slots}" "slots")"
 typeset -g hero_sound_file="$(_hero_resolve_state_file "${HERO_SOUND_FILE:-$HOME/.hero_sound}" "sound")"
+typeset -g hero_volume_file="$(_hero_resolve_state_file "${HERO_VOLUME_FILE:-$HOME/.hero_volume}" "volume")"
 typeset -g hero_heart_pad_file="$(_hero_resolve_state_file "${HERO_HEART_PAD_FILE:-$HOME/.hero_heart_pad}" "heart_pad")"
 
 # 3. String & Number Utilities (Pure Native Zsh, Zero Subprocesses)
