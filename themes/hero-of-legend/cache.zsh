@@ -23,6 +23,8 @@ function HeroCache() {
                 # Trash Count (Linux XDG or macOS ~/.Trash)
                 local trash_dir="${XDG_DATA_HOME:-$HOME/.local/share}/Trash/files"
                 [[ ! -d "$trash_dir" && -d "$HOME/.Trash" ]] && trash_dir="$HOME/.Trash"
+                [[ ! -d "$trash_dir" && -d "${XDG_DATA_HOME:-$HOME/.local/share}/Trash" ]] && trash_dir="${XDG_DATA_HOME:-$HOME/.local/share}/Trash"
+                [[ ! -d "$trash_dir" && -d "${TMPDIR:-/tmp}/Trash-$USER" ]] && trash_dir="${TMPDIR:-/tmp}/Trash-$USER"
                 
                 if [[ -d "$trash_dir" ]]; then
                     local -a trash_files

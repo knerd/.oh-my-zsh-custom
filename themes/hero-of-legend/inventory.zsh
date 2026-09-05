@@ -49,7 +49,7 @@ function HeroInventory() {
             case "$property" in
                 icon)
                     local icon="${hero_icons[$item_key]:-${default:-❓}}"
-                    if [[ "$item_key" == "key" ]]; then
+                    if [[ "$item_key" == "key" || "$item_key" == "ladder" ]]; then
                         local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
                         (( pad == 1 )) && icon="${icon} "
                     fi

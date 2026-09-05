@@ -39,19 +39,21 @@ function test_emoji_character_widths() {
         "♦️ˣ000:5"
         "🧭 master:9"
         "🏺2:3"
-        "🪜4:3"
+        "🪜 4:3"
         "❤️ ❤️ 🖤:6"
         "❤️ 🖤🖤:6"
         "❤️ ❤️ ❤️ :6"
         "🏹ˣ08:5"
         "🗝️ ˣ04:5"
-        "🗺️~:3"
+        "🗺️ ~:3"
         "🎒:2"
-        "🗡️ƶ:3"
+        "🗡️ ƶ:3"
         "🧙:2"
         "🧚:2"
         "⬆1:2"
         "⬇2:2"
+        "↑1:2"
+        "↓2:2"
         "➤:1"
     )
     
@@ -71,12 +73,27 @@ function test_emoji_character_widths() {
     HeroState heart_pad set 0
     local actual_unpadded_key=$(heroVisualWidth "🗝️ˣ04")
     local actual_unpadded_heart=$(heroVisualWidth "❤️❤️🖤")
+    local actual_unpadded_ladder=$(heroVisualWidth "🪜4")
+    local actual_unpadded_map=$(heroVisualWidth "🗺️~")
+    local actual_unpadded_sword=$(heroVisualWidth "🗡️ƶ")
     if (( actual_unpadded_key != 5 )); then
         echo "  FAIL (unpadded key): input='🗝️ˣ04' expected=5 actual=$actual_unpadded_key"
         all_passed=0
     fi
     if (( actual_unpadded_heart != 6 )); then
         echo "  FAIL (unpadded heart): input='❤️❤️🖤' expected=6 actual=$actual_unpadded_heart"
+        all_passed=0
+    fi
+    if (( actual_unpadded_ladder != 3 )); then
+        echo "  FAIL (unpadded ladder): input='🪜4' expected=3 actual=$actual_unpadded_ladder"
+        all_passed=0
+    fi
+    if (( actual_unpadded_map != 3 )); then
+        echo "  FAIL (unpadded map): input='🗺️~' expected=3 actual=$actual_unpadded_map"
+        all_passed=0
+    fi
+    if (( actual_unpadded_sword != 3 )); then
+        echo "  FAIL (unpadded sword): input='🗡️ƶ' expected=3 actual=$actual_unpadded_sword"
         all_passed=0
     fi
     HeroState heart_pad set 1
@@ -172,6 +189,79 @@ function test_hud_box_alignment() {
     fi
 }
 
+function test_hud_box_alignment_nongit() {
+    export HERO_CACHE_TR=2
+    export HERO_CACHE_DL=6
+    export HERO_CACHE_KY=3
+    export HERO_GIT_IN_REPO=0
+    export HERO_GIT_DIRTY=0
+    export HERO_CACHE_POT=0
+    export HERO_CACHE_LADDER=2
+    export HERO_WALLET=32
+
+    HeroState heart_pad set 1
+    HeroState slots persist 2 key
+    precmd >/dev/null 2>&1
+
+    local -a lines=("${(@f)PROMPT}")
+    local -a boxLines=()
+    for l in "${lines[@]}"; do
+        if [[ "$l" =~ "┌|│|├" && "$l" != *"BATTLE LOG"* ]]; then
+            boxLines+=("$l")
+        fi
+    done
+
+    if (( ${#boxLines} >= 3 )); then
+        local w1=$(heroVisualWidth "${boxLines[1]}")
+        local w2=$(heroVisualWidth "${boxLines[2]}")
+        local w3=$(heroVisualWidth "${boxLines[3]}")
+        echo "  Non-Git Line 1 width: $w1"
+        echo "  Non-Git Line 2 width: $w2"
+        echo "  Non-Git Line 3 width: $w3"
+        if (( w1 == w2 && w2 == w3 )); then
+            echo "  PASS: Non-git HUD box borders are perfectly aligned (all lines width $w1)."
+        else
+            echo "  FAIL: Non-git HUD box borders are misaligned ($w1 vs $w2 vs $w3)."
+        fi
+    fi
+}
+
+function test_item_hud_alignment() {
+    source "${ZSH_CUSTOM}/aliases/hero-shortcuts.alias.zsh"
+    local all_passed=1
+
+    for pad in 1 0; do
+        HeroState heart_pad set $pad
+        local mode_desc="Linux/glibc (padded)"
+        (( pad == 0 )) && mode_desc="macOS/Unicode 9+ (unpadded)"
+
+        local -a lines=("${(@f)$(hud)}")
+        if (( ${#lines} != 11 )); then
+            echo "  FAIL ($mode_desc): expected 11 lines, got ${#lines}"
+            all_passed=0
+            continue
+        fi
+
+        local line_widths=()
+        local line_err=0
+        for i in {1..${#lines}}; do
+            local line="${lines[$i]}"
+            local w=$(heroVisualWidth "$line")
+            line_widths+=("$w")
+            if (( w != 47 )); then
+                echo "  FAIL ($mode_desc line $i): width=$w expected=47 -> '$line'"
+                line_err=1
+                all_passed=0
+            fi
+        done
+
+        if (( line_err == 0 )); then
+            echo "  PASS ($mode_desc): All 11 rows of Item HUD ('z') are perfectly aligned at width 47."
+        fi
+    done
+    HeroState heart_pad set 1
+}
+
 echo "\n========== VERIFICATION OUTPUT =========="
 
 echo "\n[TEST] Refined Color Logic Check"
@@ -183,7 +273,13 @@ test_countdown_logic 1800  # 30m -> Red
 echo "\n[TEST] Emoji Character Width Check"
 test_emoji_character_widths
 
-echo "\n[TEST] HUD Box Alignment Check"
+echo "\n[TEST] HUD Box Alignment Check (Git Repo)"
 test_hud_box_alignment
+
+echo "\n[TEST] HUD Box Alignment Check (Non-Git Dir)"
+test_hud_box_alignment_nongit
+
+echo "\n[TEST] Item HUD Alignment Check ('z' / 'hud')"
+test_item_hud_alignment
 
 echo "\n========== END VERIFICATION =========="

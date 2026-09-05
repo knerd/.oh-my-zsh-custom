@@ -25,7 +25,7 @@ function HeroGame() {
                 HeroGame _log_failure "$last_command" "$companion_msg"
                 HeroState wallet adjust -10
             else
-                HeroState wallet adjust 1
+                HeroState wallet adjust 5
             fi
             ;;
 

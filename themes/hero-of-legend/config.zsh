@@ -24,7 +24,7 @@ typeset -gA hero_registry=(
 
     # === ARROWS ===
     [bow]="🏹|a|Magic Bow|arw:Loose an arrow straight to ~/Downloads. Shows file count and lands you there instantly!"
-    [firearrow]="🔥|a!|Fire Arrow|hero-fire-arrows:🎮 ARCHERY MINI-GAME! Select targets, time your shots, earn points & ranks."
+    [firearrow]="🔥|a!|Fire Arrow|hero-fire-arrows:🎮 ARCHERY MINI-GAME! Select targets, time your shots, earn points & rupees."
     [lightarrow]="⚡|a+|Light Arrow|source hero-light-arrow:Create warp points! Name your arrow (a.docs) to teleport back instantly."
     [icearrow]="❄️|a-|Ice Arrow|hero-ice-arrow:Freeze your changes with git stash! View, thaw, or melt frozen work anytime."
     [bomb]="💣|b|Magic Bombs|bomb:Explosive trash management! 'b' detonates the bin, 'b+' moves to trash, 'b-' peeks inside."
@@ -130,3 +130,10 @@ typeset -g tri_top_norm="%B%F{${tri_color}} ▲ %f%b"
 typeset -g tri_bot_norm="%B%F{${tri_color}}▲ ▲%f%b"
 typeset -g tri_top_git="%B%F{${tri_color}}⯆ ⯆%f%b"
 typeset -g tri_bot_git="%B%F{${tri_color}} ⯆ %f%b"
+
+# Git Sync Indicators
+typeset -g hero_git_ahead_icon="${HERO_GIT_AHEAD_ICON:-↑}"
+typeset -g hero_git_behind_icon="${HERO_GIT_BEHIND_ICON:-↓}"
+typeset -g hero_git_ahead_color="${HERO_GIT_AHEAD_COLOR:-cyan}"
+typeset -g hero_git_behind_color="${HERO_GIT_BEHIND_COLOR:-red}"
+

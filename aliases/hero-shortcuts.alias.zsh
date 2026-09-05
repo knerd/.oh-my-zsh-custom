@@ -21,19 +21,39 @@
 # '"
 
 # Modern
-alias hud="echo ' 
-┌ 💍 HUD ───────────────────┐  ┌ CRYSTALS ┐
-│ 🏹 a 💣 b 🔑 k 🗡 z 💥 x  │  │  💎 💎   │  
-├ 🎒 ITEMS  ────────────────┤  │ 💎 💎 💎 │
-│ 🔥 a! 🔦 f 🎺 lt          │  │   💎 💎  │     
-│ ⚡ a+ 📗 h 🖍 m           │  ├ PENDANTS ┤
-├ 🧰 GIT TOOLS ─────────────┤  │ 💍 👑 🔱️ │
-│ 🌀 g 🪃 P 🎣 p ✨ CO 🍄 S │  ├ EQUIPPED ┤
-│ 🔨 A 🌱 B 📜 C 🪞 D  🫙 M │  │ 🗡 🛡️ 👕 │
-├ 🤺 DO ────────────────────┤  ├ DUNGEON ─┤
-│ 🥾 ?  🥊 G  🤿 v  🔮 t    │  │ 🗺️ 🧭 🔑 │ 
-└───────────────────────────┘  └──────────┘ 
-'"
+function hud() {
+    local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+    if (( pad == 1 )); then
+        cat << 'EOF'
+┌ 💍 HUD ───────────────────────┐  ┌ CRYSTALS ┐
+│ 🏹 a  💣 b  🔑 k  🗡️  z  💥 x  │  │  💎  💎  │
+├ 🎒 ITEMS ─────────────────────┤  │ 💎 💎 💎 │
+│ 🔥 a! 🔦 f  🎺 lt             │  │  💎  💎  │
+│ ⚡ a+ 📗 h  🖍️  m              │  ├ PENDANTS ┤
+├ 🧰 GIT TOOLS ─────────────────┤  │ 💍 👑 🔱 │
+│ 🌀 g  🪃  P  🎣 p  ✨ CO 🍄 S  │  ├ EQUIPPED ┤
+│ 🔨 A  🌱 B  📜 C  🪞  D  🫙  M  │  │ 🗡️  🛡️  👕 │
+├ 🤺 DO ────────────────────────┤  ├ DUNGEON ─┤
+│ 🥾 ?  🥊 G  🤿 v  🔮 t        │  │ 🗺️  🧭 🔑 │
+└───────────────────────────────┘  └──────────┘
+EOF
+    else
+        cat << 'EOF'
+┌ 💍 HUD ───────────────────────┐  ┌ CRYSTALS ┐
+│ 🏹 a  💣 b  🔑 k  🗡️ z  💥 x  │  │  💎  💎  │
+├ 🎒 ITEMS ─────────────────────┤  │ 💎 💎 💎 │
+│ 🔥 a! 🔦 f  🎺 lt             │  │  💎  💎  │
+│ ⚡ a+ 📗 h  🖍️ m              │  ├ PENDANTS ┤
+├ 🧰 GIT TOOLS ─────────────────┤  │ 💍 👑 🔱 │
+│ 🌀 g  🪃 P  🎣 p  ✨ CO 🍄 S  │  ├ EQUIPPED ┤
+│ 🔨 A  🌱 B  📜 C  🪞 D  🫙 M  │  │ 🗡️ 🛡️ 👕 │
+├ 🤺 DO ────────────────────────┤  ├ DUNGEON ─┤
+│ 🥾 ?  🥊 G  🤿 v  🔮 t        │  │ 🗺️ 🧭 🔑 │
+└───────────────────────────────┘  └──────────┘
+EOF
+    fi
+}
+alias hud="hud"
 
 # o and z+ aliases are now handled in the theme file to ensure consistent integration with the inventory and magic chest systems.
 
@@ -135,9 +155,89 @@ alias g\.f="g. finish"
 alias G="powerGloves"
 # Overwrite powerGloves with your own custom heavy lifting commands
 powerGloves() {
-    b+ vendor
-    b+ node_modules
-    yarn
+    local cleared=0
+    if [[ -e vendor ]]; then
+        hero-magic-bomb file vendor
+        cleared=1
+    fi
+    if [[ -e node_modules ]]; then
+        hero-magic-bomb file node_modules
+        cleared=1
+    fi
+    if (( ! cleared )); then
+        echo "🥊 Power Gloves: No vendor or node_modules found to clear."
+    fi
+
+    local ran_pm=0
+
+    # Install dependencies using detected package manager
+    if [[ -f composer.json ]]; then
+        if command -v composer >/dev/null 2>&1; then
+            echo "🥊 Power Gloves: Installing composer dependencies..."
+            composer install
+            ran_pm=1
+        else
+            echo "🥊 Power Gloves: composer.json found, but 'composer' is not installed." >&2
+        fi
+    fi
+
+    if [[ -f package.json || -f yarn.lock || -f pnpm-lock.yaml || -f package-lock.json || -f bun.lockb || -f bun.lock ]]; then
+        if [[ -f yarn.lock ]]; then
+            if command -v yarn >/dev/null 2>&1; then
+                echo "🥊 Power Gloves: Running yarn..."
+                yarn
+                ran_pm=1
+            else
+                echo "🥊 Power Gloves: yarn.lock detected, but 'yarn' is not installed." >&2
+                if command -v pnpm >/dev/null 2>&1; then
+                    echo "🥊 Falling back to pnpm install..."
+                    pnpm install
+                    ran_pm=1
+                elif command -v npm >/dev/null 2>&1; then
+                    echo "🥊 Falling back to npm install..."
+                    npm install
+                    ran_pm=1
+                fi
+            fi
+        elif [[ -f pnpm-lock.yaml ]] && command -v pnpm >/dev/null 2>&1; then
+            echo "🥊 Power Gloves: Running pnpm install..."
+            pnpm install
+            ran_pm=1
+        elif [[ -f package-lock.json ]] && command -v npm >/dev/null 2>&1; then
+            echo "🥊 Power Gloves: Running npm install..."
+            npm install
+            ran_pm=1
+        elif [[ -f bun.lockb || -f bun.lock ]] && command -v bun >/dev/null 2>&1; then
+            echo "🥊 Power Gloves: Running bun install..."
+            bun install
+            ran_pm=1
+        elif [[ -f package.json ]]; then
+            if command -v pnpm >/dev/null 2>&1; then
+                echo "🥊 Power Gloves: Running pnpm install..."
+                pnpm install
+                ran_pm=1
+            elif command -v npm >/dev/null 2>&1; then
+                echo "🥊 Power Gloves: Running npm install..."
+                npm install
+                ran_pm=1
+            elif command -v yarn >/dev/null 2>&1; then
+                echo "🥊 Power Gloves: Running yarn..."
+                yarn
+                ran_pm=1
+            elif command -v bun >/dev/null 2>&1; then
+                echo "🥊 Power Gloves: Running bun install..."
+                bun install
+                ran_pm=1
+            else
+                echo "🥊 Power Gloves: package.json found but no Node package manager (pnpm/npm/yarn/bun) is installed." >&2
+                return 1
+            fi
+        fi
+    fi
+
+    if (( ! ran_pm && ! cleared )); then
+        echo "🥊 Power Gloves: Nothing to do here! (No vendor/node_modules or package manifests found)"
+    fi
 }
 
 alias t='launchTop'

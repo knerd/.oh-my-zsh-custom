@@ -29,7 +29,9 @@ function _hero_resolve_state_file() {
     fi
 }
 
-typeset -g hero_wallet_file="$(_hero_resolve_state_file "${HERO_WALLET_FILE:-$HOME/.hero_wallet}" "wallet")"
+local _default_wallet="${HERO_WALLET_FILE:-$HOME/.hero_wallet}"
+[[ -z "$HERO_WALLET_FILE" && ! -f "$HOME/.hero_wallet" && -f "$HOME/.hero-wallet" ]] && _default_wallet="$HOME/.hero-wallet"
+typeset -g hero_wallet_file="$(_hero_resolve_state_file "$_default_wallet" "wallet")"
 typeset -g hero_cycle_file="$(_hero_resolve_state_file "${HERO_CYCLE_FILE:-$HOME/.hero_cycle}" "cycle")"
 typeset -g hero_slots_file="$(_hero_resolve_state_file "${HERO_SLOTS_FILE:-$HOME/.hero_slots}" "slots")"
 typeset -g hero_sound_file="$(_hero_resolve_state_file "${HERO_SOUND_FILE:-$HOME/.hero_sound}" "sound")"
@@ -83,13 +85,18 @@ function heroVisualWidth() {
         
         # Wide codepoints (emojis, east asian characters, symbols)
         local -i is_wide=0
-        if (( code == 0x1F5DD )); then
-            # Old key: on Linux/glibc wcwidth is 1, so if padded it occupies 1 column (+ 1 space = 2)
+        if (( code == 0x1F5DD || code == 0x1FA9C || code == 0x1F5FA || \
+              code == 0x1F5E1 || code == 0x1F58D || code == 0x1F6E1 || \
+              code == 0x1FA83 || code == 0x1FA9E || code == 0x1FAD9 )); then
+            # Emojis that occupy 1 column on Linux/glibc terminals (key, ladder, map, sword, marker, shield, boomerang, mirror, jar):
+            # In padded mode (current_pad == 1), their character code counts as 1 (with space = 2).
+            # In unpadded mode (current_pad == 0), they occupy 2 columns directly.
             local -i current_pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
             (( current_pad == 0 )) && is_wide=1
         elif (( (code >= 0x1F000 && code <= 0x1FAFF) || \
               (code >= 0x2E80 && code <= 0x9FFF) || \
-              (code >= 0xF900 && code <= 0xFAFF) )); then
+              (code >= 0xF900 && code <= 0xFAFF) || \
+              code == 0x26A1 || code == 0x2728 )); then
             is_wide=1
         elif (( code == 0x2764 || code == 0x2665 )); then
             # If heart padding is disabled (Unicode 9+ mode), red heart occupies 2 columns directly

@@ -215,13 +215,20 @@ function HeroUI() {
 
         compass)
             local -i is_in_repo=${1:-0}
-            local room_stats="%F{240}┤%F{242}${hero_icons[pot]}${HERO_CACHE_POT} ${hero_icons[ladder]}${HERO_CACHE_LADDER}%F{240}├%f"
+            local ladder_icon=$(HeroInventory get ladder icon)
+            local room_stats="%F{240}┤%F{242}${hero_icons[pot]}${HERO_CACHE_POT} ${ladder_icon}${HERO_CACHE_LADDER}%F{240}├%f"
             
             if (( is_in_repo )); then
                 local branch_part="%F{green}${HERO_GIT_REF}%f"
-                local sync_part=""
-                (( HERO_GIT_AHEAD > 0 )) && sync_part+="%F{242}⬆${HERO_GIT_AHEAD}%f"
-                (( HERO_GIT_BEHIND > 0 )) && sync_part+="%F{242}⬇${HERO_GIT_BEHIND}%f"
+                local -a sync_items=()
+                local ahead_icon="${hero_git_ahead_icon:-↑}"
+                local behind_icon="${hero_git_behind_icon:-↓}"
+                local ahead_color="${hero_git_ahead_color:-cyan}"
+                local behind_color="${hero_git_behind_color:-red}"
+
+                (( HERO_GIT_AHEAD > 0 )) && sync_items+="%F{${ahead_color}}${ahead_icon}${HERO_GIT_AHEAD}%f"
+                (( HERO_GIT_BEHIND > 0 )) && sync_items+="%F{${behind_color}}${behind_icon}${HERO_GIT_BEHIND}%f"
+                local sync_part="${(j: :)sync_items}"
                 
                 if [[ -n "$sync_part" ]]; then
                     echo "${branch_part} ${sync_part} ${room_stats}"
@@ -299,10 +306,13 @@ function HeroUI() {
             # Line 3: Equipment Icons + Optional Companion Dialogue
             local line3_content=""
             if [[ -n "${equip_icons// /}" ]]; then
-                line3_content="${equip_icons}${BORDER} ┬ ${RESET}"
-            fi
-            if [[ -n "${npc_message// /}" ]]; then
-                line3_content+="${npc_message}"
+                if [[ -n "${npc_message// /}" ]]; then
+                    line3_content="${equip_icons}${BORDER} ┬ ${RESET}${npc_message}"
+                else
+                    line3_content="${equip_icons}${BORDER} ┬${RESET}"
+                fi
+            elif [[ -n "${npc_message// /}" ]]; then
+                line3_content="${npc_message}"
             fi
             
             # Accurate Visual Column Widths
