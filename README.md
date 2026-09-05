@@ -39,35 +39,6 @@
 
 </div>
 
----
-
-## 📸 ARSENAL & SCREENSHOT INVENTORY
-
-<div align="center">
-
-<details>
-  <summary>🔍 <b>Click to expand individual high-resolution screenshots & tool breakdown</b></summary>
-  <br/>
-
-| Relic / Feature | Command / Key | Screenshot Preview |
-| :--- | :---: | :--- |
-| **Title Screen & Classic HUD** | `CL; hud` | <img src="themes/hero-of-legend/splash.webp" alt="Title Screen" width="450"> |
-| **HUD Anatomy & Action Matrix** | `?` | <img src="themes/hero-of-legend/HUD%20cheatsheet.webp" alt="HUD Cheatsheet" width="450"> |
-| **Pegasus Boots Field Manual** | `?` | <img src="themes/hero-of-legend/manual.webp" alt="Pegasus Boots Manual" width="450"> |
-| **Magic Chest Item Downloader** | `z+` | <img src="themes/hero-of-legend/magic%20chest.webp" alt="Magic Chest" width="450"> |
-| **Fire Arrows Archery Mini-Game** | `a!` | <img src="themes/hero-of-legend/fire%20arrows.webp" alt="Fire Arrows" width="450"> |
-| **Light Arrows Inscribing Fast Travel** | `a+` | <img src="themes/hero-of-legend/light%20arrow.webp" alt="Light Arrow Setup" width="450"> |
-| **Light Arrows Warp Speed Direct Travel** | `a.<name>` | <img src="themes/hero-of-legend/using%20light%20arrow.webp" alt="Using Light Arrow" width="450"> |
-| **Magic Bombs Detonating Trash Bin** | `b` | <img src="themes/hero-of-legend/magic%20bomb.webp" alt="Magic Bomb" width="450"> |
-| **Superuser Bomb Sudo Vaporization** | `b` (sudo) | <img src="themes/hero-of-legend/superuser%20bomb.webp" alt="Superuser Bomb" width="450"> |
-| **Shortcut Quick Reference** | `explainer` | <img src="themes/hero-of-legend/explainer.webp" alt="Quick Reference Explainer" width="450"> |
-
-</details>
-
-</div>
-
----
-
 ## 📜 TABLE OF CONTENTS
 
 - [Arsenal & Screenshot Inventory](#-arsenal--screenshot-inventory)
