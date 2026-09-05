@@ -530,9 +530,7 @@ This project stands upon the shoulders of gaming giants and legendary open-sourc
 Maintaining a custom terminal kingdom requires magic potions and lantern oil! If the Hero of Legend theme brings joy to your daily workflow, consider sponsoring the adventurer behind the blade:
 
 * 💖 **GitHub Sponsors**: [github.com/sponsors/knerd](https://github.com/sponsors/knerd)
-* ☕ **Buy Me a Coffee**: [buymeacoffee.com/knerd](https://www.buymeacoffee.com/knerd)
-* 🪙 **Ko-fi**: [ko-fi.com/knerd](https://ko-fi.com/knerd)
-* 🎨 **Patreon**: [patreon.com/knerd](https://patreon.com/knerd)
+* ☕ **Buy Me a Coffee**: [buymeacoffee.com/knerd](https://www.buymeacoffee.com/youmeos)
 
 ---
 
