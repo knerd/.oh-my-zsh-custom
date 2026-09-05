@@ -287,12 +287,16 @@ alias t='launchTop'
 launchTop() { if [ -x "$(command -v htop)" ]; then htop; else top; fi; }
 
 : '///////////// ALIASES for HELP /////////////'
-declare -A HERO_HELP=(
+local -i _hero_pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+local _hero_sp=""
+(( _hero_pad == 1 )) && _hero_sp=" "
+
+declare -gA HERO_HELP=(
     # HUD
     [a]="🏹 a  - Arrows: # of files in ~/Downloads; a/arw is a direct shot to ~/Downloads"
     [b]="💣 b  - Magic Bombs: # of Gigs in Trash; b/bomb blows up the trash bin, b+ [FILE] moves file to trash, b- lists trash"
-    [k]="🗝️ k  - Magic Keys: # of child directories; k[2-9] # of keys cd .. that many times."
-    [z]="🗡️ z  - Magic Sword: Wipes the screen, shows your inventory, and awaits your next command."
+    [k]="🗝️${_hero_sp} k  - Magic Keys: # of child directories; k[2-9] # of keys cd .. that many times."
+    [z]="🗡️${_hero_sp} z  - Magic Sword: Wipes the screen, shows your inventory, and awaits your next command."
     [x]="💥 x  - Quake: Close the terminal"
 
     # ITEMS
@@ -300,7 +304,7 @@ declare -A HERO_HELP=(
     ["a!"]="🔥 a! - Fire Arrows: Burn through all your downloads - one at a time. Uses rm -i."
     [f]="🔦 f  - Magic Lantern aka Flashlight: Search the castle for files that match"
     [h]="📗 h  - Magic Book of History: Search through the history of CLI command inputs"
-    [m]="🖍️ m  - Magic Marker: Quickly save code snippets. m/mark [snippet] Saves to ~/hero-magic-marker"
+    [m]="🖍️${_hero_sp} m  - Magic Marker: Quickly save code snippets. m/mark [snippet] Saves to ~/hero-magic-marker"
     [lt]="🎺 lt - Magic Trumpet: Use LocalTunnel to open a pubically accessible portal to any local port."
 
     # GIT TOOLS
@@ -308,15 +312,15 @@ declare -A HERO_HELP=(
     [B]="🌱 B  - Magic Bean:   git checkout -b"
     [C]="📜 C  - Magic Scroll: git commit -m"
     [CO]="✨ CO - Magic Powder: git checkout"
-    [D]="🪞 D  - Magic Mirror: git diff"
+    [D]="🪞${_hero_sp} D  - Magic Mirror: git diff"
     [g]="🌀 g  - Git Flow:   git flow; g-,g+,g!,g?,g."
     ["g-"]="🌀 g  - Git Flow: git flow init"
     ["g+"]="🌀 g  - Git Flow: git flow feature; g+s g+f g+p"
     ["g!"]="🌀 g  - Git Flow: git flow hotfix; g!s g!f g!p"
     ["g?"]="🌀 g  - Git Flow: git flow bugfix; g?s g?f g?p"
     ["g."]="🌀 g  - Git Flow: git flow release;  g.s g.f g.p"
-    [M]="🫙 M  - Magic Bottle: git merge"
-    [P]="🪃 P  - Magic Boomerang: git push"
+    [M]="🫙${_hero_sp} M  - Magic Bottle: git merge"
+    [P]="🪃${_hero_sp} P  - Magic Boomerang: git push"
     [p]="🎣 p  - Magic? Fishing Poll: git pull"
     [S]="🍄 S  - Magic Mushroom: git status"
 
@@ -344,11 +348,11 @@ alias \?B="echo '${HERO_HELP[B]}'"
 alias \?C="echo '${HERO_HELP[C]}'"
 alias \?D="echo '${HERO_HELP[D]}'"
 alias \?g="echo '${HERO_HELP[g]}'"
-alias \?g-="echo '${HERO_HELP["g-"]}'"
-alias \?g\?="echo '${HERO_HELP["g?"]}'"
-alias \?g+="echo '${HERO_HELP["g+"]}'"
-alias \?g!="echo '${HERO_HELP["g!"]}'"
-alias \?g.="echo '${HERO_HELP["g."]}'"
+alias \?g-="echo '${HERO_HELP[g-]}'"
+alias \?g\?="echo '${HERO_HELP[g?]}'"
+alias \?g+="echo '${HERO_HELP[g+]}'"
+alias \?g!="echo '${HERO_HELP[g!]}'"
+alias \?g.="echo '${HERO_HELP[g.]}'"
 alias \?M="echo '${HERO_HELP[M]}'"
 alias \?P="echo '${HERO_HELP[P]}'"
 alias \?p="echo '${HERO_HELP[p]}'"
@@ -357,16 +361,21 @@ alias \?G="echo '${HERO_HELP[G]}'"
 alias \?v="echo '${HERO_HELP[v]}'"
 alias \?t="echo '${HERO_HELP[t]}'"
 alias \?CO="echo '${HERO_HELP[CO]}'"
-alias \?a+="echo '️${HERO_HELP["a+"]}'"
-alias \?a!="echo '️${HERO_HELP["a!"]}'"
+alias \?a+="echo '${HERO_HELP[a+]}'"
+alias \?a!="echo '${HERO_HELP[a!]}'"
 alias \?R="echo '${HERO_HELP[R]}'"
 alias \?L="echo '${HERO_HELP[L]}'"
-alias \?z+="echo '${HERO_HELP["z+"]}'"
+alias \?z+="echo '${HERO_HELP[z+]}'"
 alias \?snd="echo '${HERO_HELP[snd]}'"
 alias lt="lt -h http://localtunnel.me"
 
-alias \?="echo '
-┌ 💍 HUD ──────────────────────────────────────────────────────────────────────────────────
+function hero_help() {
+    local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+    local shield_sp=""
+    (( pad == 1 )) && shield_sp=" "
+
+    cat << EOF | less -R
+┌ 💍 HUD ─────────────────────────────────── (Use 'q' to close screen) ────────────────────
 │ ${HERO_HELP[z]}
 │ ${HERO_HELP[k]}
 │ ${HERO_HELP[b]}
@@ -376,8 +385,8 @@ alias \?="echo '
 │ ${HERO_HELP[L]}
 │ ${HERO_HELP[snd]}
 ├ 🎒 ITEMS ────────────────────────────────────────────────────────────────────────────────
-│ ${HERO_HELP["a+"]}
-│ ${HERO_HELP["a!"]}
+│ ${HERO_HELP[a+]}
+│ ${HERO_HELP[a!]}
 │ ${HERO_HELP[f]}
 │ ${HERO_HELP[h]}
 │ ${HERO_HELP[m]}
@@ -386,6 +395,7 @@ alias \?="echo '
 │ ${HERO_HELP[A]}
 │ ${HERO_HELP[B]}
 │ ${HERO_HELP[C]}
+│ ${HERO_HELP[CO]}
 │ ${HERO_HELP[D]}
 │ ${HERO_HELP[g]}
 │ ${HERO_HELP[M]}
@@ -393,18 +403,20 @@ alias \?="echo '
 │ ${HERO_HELP[p]}
 │ ${HERO_HELP[S]}
 ├ 🤺 EQUIPMENT ──────────────────────────────────────────────────────────────────────────────────
-│ 🥾 ?  - Pegasus Boots: Run this Help menu, become uber-micro-fast by honing in on your CLI skills. 
+│ 🥾 ?  - Pegasus Boots: Run this Help menu (use 'q' to close screen), become uber-micro-fast!
 │ ${HERO_HELP[G]}
 │ ${HERO_HELP[v]}
 │ ${HERO_HELP[t]}
 ├ EQUIPPED ──────────────────────────────────────────────────────────────────────────────────
 │ 💍 Pendant: Shows if hero-of-legend aliases file is installed (R to reload)
-│ 🛡️ Shield: Shows if all hero-of-legend bin scripts have been downloaded 
+│ 🛡️${shield_sp} Shield: Shows if all hero-of-legend bin scripts have been downloaded 
 │ 👕 Tunic: This Theme
-│ 🧰 z+ Magic Chest: ${HERO_HELP["z+"]}
-└─────────────────────────────────────────────────────────────────────────────────────────
-👕 $USER used the Pegasus Boots 🥾. Now they can run commands super quick!
-'|less"
+│ ${HERO_HELP[z+]}
+└─────────────────────────────────────────── (Use 'q' to close screen) ────────────────────
+👕 $USER used the Pegasus Boots 🥾. Now they can run commands super quick! (Use 'q' to close screen)
+EOF
+}
+alias \?="hero_help"
 
 # alias hud="echo '
 # ┌💍 HUD ────────────────────┐  ┌Crystals──┐

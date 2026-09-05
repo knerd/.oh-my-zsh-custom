@@ -30,6 +30,11 @@ function precmd() {
         HeroGame process $exit_status "$last_command" "$HERO_CACHED_NPC_MSG"
         HeroState cycle check
         HeroStatus refresh
+        
+        # Invalidate file-count cache immediately if last command touched trash or downloads
+        if [[ "$last_command" =~ '^(b|bomb|sudo[[:space:]]+b|sudo[[:space:]]+bomb|a|a!|a\+|CL)' ]]; then
+            HERO_CACHE_TS=0
+        fi
         HeroCache refresh
     fi
     

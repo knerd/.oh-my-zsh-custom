@@ -8,6 +8,7 @@ alias updatey='sudo apt-get --yes'
 alias update='sudo apt-get update && sudo apt-get upgrade'
 
 # Tune sudo and su
+alias sudo='sudo '
 alias root='sudo -i'
 alias su='sudo -i'
 

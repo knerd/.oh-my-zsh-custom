@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="themes/hero-of-legend/splash.png" alt="The Legend of Zshell - Hero of Legend Splash Screen and HUD" width="700">
+<img src="themes/hero-of-legend/splash.webp" alt="The Legend of Zshell - Hero of Legend Splash Screen and HUD" width="700">
 
 <br/>
 
@@ -41,8 +41,63 @@
 
 ---
 
+## 📸 INTERACTIVE SCREENSHOT SLIDESHOW
+
+<details open>
+  <summary><b>Slide 1: Title Screen & Classic Zelda HUD</b> (Click to open next slide)</summary>
+  <img src="themes/hero-of-legend/splash.webp" alt="Slide 1: Title Screen & Classic Zelda HUD" width="100%">
+  
+  <details>
+    <summary><b>Slide 2: HUD Anatomy & Action Matrix Cheatsheet</b> (Click to open next slide)</summary>
+    <img src="themes/hero-of-legend/HUD%20cheatsheet.webp" alt="Slide 2: HUD Anatomy & Action Matrix Cheatsheet" width="100%">
+    
+    <details>
+      <summary><b>Slide 3: Pegasus Boots Field Manual (?)</b> (Click to open next slide)</summary>
+      <img src="themes/hero-of-legend/manual.webp" alt="Slide 3: Pegasus Boots Field Manual" width="100%">
+      
+      <details>
+        <summary><b>Slide 4: Shortcut Quick Reference Explainer</b> (Click to open next slide)</summary>
+        <img src="themes/hero-of-legend/explainer.webp" alt="Slide 4: Shortcut Quick Reference Explainer" width="100%">
+        
+        <details>
+          <summary><b>Slide 5: Magic Chest Item Downloader (z+)</b> (Click to open next slide)</summary>
+          <img src="themes/hero-of-legend/magic%20chest.webp" alt="Slide 5: Magic Chest Item Downloader" width="100%">
+          
+          <details>
+            <summary><b>Slide 6: Fire Arrows Archery Mini-Game (a!)</b> (Click to open next slide)</summary>
+            <img src="themes/hero-of-legend/fire%20arrows.webp" alt="Slide 6: Fire Arrows Archery Mini-Game" width="100%">
+            
+            <details>
+              <summary><b>Slide 7: Light Arrows — Inscribing Fast Travel Points (a+)</b> (Click to open next slide)</summary>
+              <img src="themes/hero-of-legend/light%20arrow.webp" alt="Slide 7: Light Arrows Inscribing Fast Travel Points" width="100%">
+              
+              <details>
+                <summary><b>Slide 8: Light Arrows — Warp Speed Direct Travel (a.destination)</b> (Click to open next slide)</summary>
+                <img src="themes/hero-of-legend/using%20light%20arrow.webp" alt="Slide 8: Light Arrows Warp Speed Direct Travel" width="100%">
+                
+                <details>
+                  <summary><b>Slide 9: Magic Bombs — Detonating the Trash Bin (b)</b> (Click to open next slide)</summary>
+                  <img src="themes/hero-of-legend/magic%20bomb.webp" alt="Slide 9: Magic Bombs Detonating the Trash Bin" width="100%">
+                  
+                  <details>
+                    <summary><b>Slide 10: Superuser Bomb — Sudo Vaporization</b></summary>
+                    <img src="themes/hero-of-legend/superuser%20bomb.webp" alt="Slide 10: Superuser Bomb Sudo Vaporization" width="100%">
+                  </details>
+                </details>
+              </details>
+            </details>
+          </details>
+        </details>
+      </details>
+    </details>
+  </details>
+</details>
+
+---
+
 ## 📜 TABLE OF CONTENTS
 
+- [Interactive Screenshot Slideshow](#-interactive-screenshot-slideshow)
 - [A Message From the Creator (Why This Exists)](#-a-message-from-the-creator-20-years-of-glorious-overkill)
 1. [The Legend of the Shell (Prologue)](#1-the-legend-of-the-shell-prologue)
 2. [Controller Layout & Operations](#2-controller-layout--operations)
