@@ -41,7 +41,6 @@
 
 ## 📜 TABLE OF CONTENTS
 
-- [Arsenal & Screenshot Inventory](#-arsenal--screenshot-inventory)
 - [A Message From the Creator (Why This Exists)](#-a-message-from-the-creator-20-years-of-glorious-overkill)
 1. [The Legend of the Shell (Prologue)](#1-the-legend-of-the-shell-prologue)
 2. [Controller Layout & Operations](#2-controller-layout--operations)
