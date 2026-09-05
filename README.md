@@ -22,7 +22,7 @@
 
 [![Zsh Version](https://img.shields.io/badge/zsh-v5.0%2B-F1502F?style=for-the-badge&logo=zsh&logoColor=white)](https://www.zsh.org/)
 [![Oh My Zsh](https://img.shields.io/badge/Oh--My--Zsh-Custom%20Suite-blueviolet?style=for-the-badge&logo=gnubash&logoColor=white)](https://ohmyz.sh/)
-[![Life Gauge](https://img.shields.io/badge/Life-❤️❤️❤️%20Full%20Hearts-e02424?style=for-the-badge)](https://github.com/knerd/.oh-my-zsh-custom)
+[![Life Gauge](https://img.shields.io/badge/Life-❤️❤️❤️%20Full%20Hearts-000000?style=for-the-badge)](https://github.com/knerd/.oh-my-zsh-custom)
 [![Rupee Wallet](https://img.shields.io/badge/Rupees-♦️%20999%20Max-00d084?style=for-the-badge)](https://github.com/knerd/.oh-my-zsh-custom)
 [![Majora Cycle](https://img.shields.io/badge/Moon%20Cycle-72%20Hours%20Remain-9b51e0?style=for-the-badge)](https://github.com/knerd/.oh-my-zsh-custom)
 [![Chiptune Audio](https://img.shields.io/badge/Audio-8--Bit%20Python%20Synthesizer-ff6900?style=for-the-badge&logo=python&logoColor=white)](https://github.com/knerd/.oh-my-zsh-custom)
