@@ -57,7 +57,7 @@ function HeroUI() {
             if [[ -z "$color" ]]; then
                 color=$(HeroUI _threshold_color $day_number 4:red 3:blue 0:white)
             fi
-            echo -n "${color}${day_number}${suffix}%f"
+            echo -n " ${color}${day_number}${suffix}%f "
             ;;
 
         # Internal: Dynamic Gradient Color
@@ -193,7 +193,8 @@ function HeroUI() {
             ;;
 
         keys)
-            echo "%F{242}${hero_icons[key]}ˣ$(HeroUI _cap "${HERO_CACHE_KY:-0}")%f"
+            local key_icon=$(HeroInventory get key icon)
+            echo "%F{242}${key_icon}ˣ$(HeroUI _cap "${HERO_CACHE_KY:-0}")%f"
             ;;
 
         _cap)
@@ -288,8 +289,8 @@ function HeroUI() {
             local hud_top_row="${1%% #}"
             local hud_bot_row="${2%% #}"
             local npc_message="${3%% #}"
-            local equip_icons="${4%% #}"
-            local equip_keys="${5%% #}"
+            local equip_icons="$4"
+            local equip_keys="$5"
             local prompt_content="${6%% #}"
             
             local BORDER="%F{240}"

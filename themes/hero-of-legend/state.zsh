@@ -151,12 +151,115 @@ function HeroState() {
                 status)
                     local item_key="$1"
                     if [[ -n "$item_key" && -n "${hero_icons[$item_key]}" ]]; then
-                        echo "${hero_icons[$item_key]} ${hero_buttons[$item_key]}"
+                        echo "$(HeroInventory get "$item_key" icon) ${hero_buttons[$item_key]}"
                     else
                         echo "Empty"
                     fi
                     ;;
             esac
             ;;
+
+        # Usage: HeroState sound [get|set|toggle|status|play]
+        sound)
+            local op="${1:-status}"; shift
+            case "$op" in
+                get)
+                    if [[ -n "$HERO_SECRET_SOUND" ]]; then
+                        if [[ "$HERO_SECRET_SOUND" =~ ^(0|off|false|no)$ ]]; then
+                            echo "0"
+                        else
+                            echo "1"
+                        fi
+                        return
+                    fi
+                    if [[ -f "$hero_sound_file" ]]; then
+                        local raw_val
+                        raw_val="$(<"$hero_sound_file")"
+                        if [[ "$raw_val" == "0" ]]; then
+                            echo "0"
+                            return
+                        fi
+                    fi
+                    echo "1"
+                    ;;
+                set)
+                    local new_state="${1:-1}"
+                    if [[ "$new_state" =~ ^(0|off|false|no)$ ]]; then
+                        echo "0" >| "$hero_sound_file" 2>/dev/null
+                    else
+                        echo "1" >| "$hero_sound_file" 2>/dev/null
+                    fi
+                    ;;
+                toggle)
+                    local -i current=$(HeroState sound get)
+                    if (( current == 1 )); then
+                        HeroState sound set 0
+                        print -P "%F{yellow}🔇 Zelda secret sound disabled.%f"
+                    else
+                        HeroState sound set 1
+                        print -P "%F{green}🔊 Zelda secret sound enabled!%f"
+                        HeroState sound play
+                    fi
+                    ;;
+                status)
+                    local -i current=$(HeroState sound get)
+                    if (( current == 1 )); then
+                        print -P "%F{green}🔊 Zelda secret sound is ON%f"
+                    else
+                        print -P "%F{yellow}🔇 Zelda secret sound is OFF%f"
+                    fi
+                    ;;
+                play)
+                    local bin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/bin"
+                    if [[ -x "$bin_dir/hero-song-of-time" ]]; then
+                        "$bin_dir/hero-song-of-time" startup >/dev/null 2>&1 &|
+                    fi
+                    ;;
+            esac
+            ;;
+
+        # Usage: HeroState heart_pad [get|set|toggle|status]
+        heart_pad)
+            local op="${1:-get}"; shift
+            case "$op" in
+                get)
+                    if [[ -n "$HERO_HEART_PAD" ]]; then
+                        echo "$HERO_HEART_PAD"
+                        return
+                    fi
+                    if [[ -f "$hero_heart_pad_file" ]]; then
+                        local raw_val
+                        raw_val="$(<"$hero_heart_pad_file")"
+                        echo "${raw_val:-1}"
+                        return
+                    fi
+                    # Default: 1 (padded) for Linux/glibc terminals where wcwidth(❤️)=1
+                    echo "1"
+                    ;;
+                set)
+                    local new_state="${1:-1}"
+                    echo "$new_state" >| "$hero_heart_pad_file" 2>/dev/null
+                    ;;
+                toggle)
+                    local -i current=$(HeroState heart_pad get)
+                    if (( current == 1 )); then
+                        HeroState heart_pad set 0
+                        print -P "%F{yellow}Heart & emoji padding disabled (for Unicode 9+ / WezTerm / modern iTerm2).%f"
+                    else
+                        HeroState heart_pad set 1
+                        print -P "%F{green}Heart & emoji padding enabled (prevents overlap in standard Linux/glibc terminals).%f"
+                    fi
+                    ;;
+                status)
+                    local -i current=$(HeroState heart_pad get)
+                    if (( current == 1 )); then
+                        print -P "%F{green}Heart & emoji padding: ON (Linux/glibc mode - prevents overlapping hearts and key)%f"
+                    else
+                        print -P "%F{yellow}Heart & emoji padding: OFF (Unicode 9+ mode - for WezTerm / modern iTerm2)%f"
+                    fi
+                    ;;
+            esac
+            ;;
     esac
 }
+

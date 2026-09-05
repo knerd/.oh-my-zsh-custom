@@ -45,6 +45,7 @@ alias i="((HERO_HIDE_ITEMS=!HERO_HIDE_ITEMS)); CL;"
 alias c="((HERO_HIDE_CLOCK=!HERO_HIDE_CLOCK)); CL;"
 alias n="((HERO_HIDE_NAVI=!HERO_HIDE_NAVI)); CL;"
 alias i-="((HERO_HIDE_EVERYTHING=!HERO_HIDE_EVERYTHING));((HERO_HIDE_ITEMS=HERO_HIDE_EVERYTHING)); CL;"
+alias snd="HeroState sound toggle"
 
 # Clear terminal show hud
 alias z="CL; hud"
@@ -183,6 +184,7 @@ declare -A HERO_HELP=(
     [R]="💍 R  - Blue Ring: Reload your .zshrc and refresh the magic."
     [L]="🏮 L  - Magic Lantern: List all files including hidden ones (ls -la)."
     ["z+"]="🧰 z+ - Magic Chest: Open the chest to download/update Hero tools."
+    [snd]="🔊 snd - Sound: Toggle Zelda secret sound on startup on/off"
 )
 
 # Help
@@ -217,6 +219,7 @@ alias \?a!="echo '️${HERO_HELP["a!"]}'"
 alias \?R="echo '${HERO_HELP[R]}'"
 alias \?L="echo '${HERO_HELP[L]}'"
 alias \?z+="echo '${HERO_HELP["z+"]}'"
+alias \?snd="echo '${HERO_HELP[snd]}'"
 alias lt="lt -h http://localtunnel.me"
 
 alias \?="echo '
@@ -228,6 +231,7 @@ alias \?="echo '
 │ ${HERO_HELP[x]}
 │ ${HERO_HELP[R]}
 │ ${HERO_HELP[L]}
+│ ${HERO_HELP[snd]}
 ├ 🎒 ITEMS ────────────────────────────────────────────────────────────────────────────────
 │ ${HERO_HELP["a+"]}
 │ ${HERO_HELP["a!"]}

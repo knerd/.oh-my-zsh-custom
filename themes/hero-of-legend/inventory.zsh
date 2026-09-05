@@ -9,6 +9,7 @@ typeset -gA hero_icons
 typeset -gA hero_buttons
 typeset -gA hero_inventory
 typeset -gA hero_desc
+typeset -g HERO_MENU_SOUND_PID=""
 
 function HeroInventory() {
     local action="$1"; shift
@@ -46,7 +47,14 @@ function HeroInventory() {
         get)
             local item_key="$1" property="$2" default="$3"
             case "$property" in
-                icon)   echo "${hero_icons[$item_key]:-${default:-❓}}" ;;
+                icon)
+                    local icon="${hero_icons[$item_key]:-${default:-❓}}"
+                    if [[ "$item_key" == "key" ]]; then
+                        local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+                        (( pad == 1 )) && icon="${icon} "
+                    fi
+                    echo "$icon"
+                    ;;
                 button) echo "${hero_buttons[$item_key]:-${default:-?}}" ;;
                 name)   echo "${hero_inventory[$item_key]:-${default:-Unknown}}" ;;
                 desc)   echo "${hero_desc[$item_key]:-${default:-}}" ;;
@@ -55,10 +63,24 @@ function HeroInventory() {
 
         # Usage: HeroInventory open
         open)
+            local bin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/bin"
+            if (( $(HeroState sound get) == 1 )) && [[ -x "$bin_dir/hero-song-of-time" ]]; then
+                HeroInventory _stop_sound
+                "$bin_dir/hero-song-of-time" storms >/dev/null 2>&1 &
+                HERO_MENU_SOUND_PID=$!
+            fi
             if command -v gum >/dev/null 2>&1; then
                 HeroInventory _equip_with_gum
             else
                 HeroInventory _equip_native
+            fi
+            HeroInventory _stop_sound
+            ;;
+
+        _stop_sound)
+            if [[ -n "$HERO_MENU_SOUND_PID" ]]; then
+                kill -TERM "$HERO_MENU_SOUND_PID" 2>/dev/null
+                HERO_MENU_SOUND_PID=""
             fi
             ;;
 
@@ -78,20 +100,30 @@ function HeroInventory() {
             HeroUI legend "82" "BACKPACK" "Equipped:  $s1   $s2   $s3   $s4"
             echo ""
             
+            local -i sound_state=$(HeroState sound get)
+            local sound_label="🔊  Secret Sound: ON (Toggle)"
+            if (( sound_state == 0 )); then
+                sound_label="🔇  Secret Sound: OFF (Toggle)"
+            fi
+
             local main_choice
             main_choice=$(gum choose \
                 --header "What would you like to do?" \
                 --header.foreground 213 \
                 --cursor.foreground 82 \
                 --selected.foreground 82 \
-                --height 8 \
+                --height 9 \
                 "🗡️  Equip Item" \
                 "🔄  Swap Slots" \
                 "🗑️  Unequip Slot" \
                 "📜  View All Items" \
+                "$sound_label" \
                 "❌  Exit Chamber")
             
-            [[ -z "$main_choice" ]] && return
+            if [[ -z "$main_choice" ]]; then
+                HeroInventory _stop_sound
+                return
+            fi
             
             case "$main_choice" in
                 "🗡️  Equip Item")
@@ -107,7 +139,14 @@ function HeroInventory() {
                     HeroInventory _view_all_items
                     HeroInventory _equip_with_gum
                     ;;
+                "$sound_label")
+                    HeroState sound toggle
+                    HeroInventory _stop_sound
+                    sleep 0.8
+                    HeroInventory _equip_with_gum
+                    ;;
                 "❌  Exit Chamber")
+                    HeroInventory _stop_sound
                     gum style --foreground 245 --italic "  Safe travels, Hero!"
                     return
                     ;;

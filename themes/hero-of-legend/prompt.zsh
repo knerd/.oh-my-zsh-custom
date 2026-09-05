@@ -57,10 +57,10 @@ function precmd() {
     # Line 1 (Top Header Row)
     local -a row_top=(
         "$tri_top"
-        "%F{red}--LIFE--%f"
+        "%F{red}-LIFE-%f"
         "${time_color}-DAY-%f"
-        "${time_color}-TIME-%f"
-        "─┬"
+        "${time_color}--TIME--%f"
+        "┬"
         "$(HeroUI bombs)"
         "$(HeroUI rupee)"
         "┬"
@@ -71,12 +71,12 @@ function precmd() {
     local -a row_bot=(
         "$tri_bot"
         "$(HeroStatus hearts)"
-        " $(HeroUI day $day $time_color)"
+        "$(HeroUI day $day $time_color)"
         "$(HeroUI timer $day)"
         "└"
         "$(HeroUI arrows)"
         "$(HeroUI keys)"
-        "─┘"
+        "┘"
         "${hero_areas[map]} %F{cyan}$(HeroUI location)%f"
     )
     

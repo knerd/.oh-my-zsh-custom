@@ -36,13 +36,15 @@ function test_emoji_character_widths() {
         "⯆ ⯆:3"
         " ▲ :3"
         "💣ˣ03:5"
-        "♦️ˣ000:6"
+        "♦️ˣ000:5"
         "🧭 master:9"
         "🏺2:3"
         "🪜4:3"
-        "♥️♥️🖤:6"
+        "❤️ ❤️ 🖤:6"
+        "❤️ 🖤🖤:6"
+        "❤️ ❤️ ❤️ :6"
         "🏹ˣ08:5"
-        "🗝️ˣ004:6"
+        "🗝️ ˣ04:5"
         "🗺️~:3"
         "🎒:2"
         "🗡️ƶ:3"
@@ -53,18 +55,34 @@ function test_emoji_character_widths() {
         "➤:1"
     )
     
+    HeroState heart_pad set 1
     local all_passed=1
     for tc in "${test_cases[@]}"; do
         local input="${tc%:*}"
         local expected="${tc#*:}"
         local actual=$(heroVisualWidth "$input")
         if (( actual != expected )); then
-            echo "  FAIL: input='$input' expected=$expected actual=$actual"
+            echo "  FAIL (padded): input='$input' expected=$expected actual=$actual"
             all_passed=0
         fi
     done
+
+    # Also test unpadded mode (Unicode 9+ / macOS)
+    HeroState heart_pad set 0
+    local actual_unpadded_key=$(heroVisualWidth "🗝️ˣ04")
+    local actual_unpadded_heart=$(heroVisualWidth "❤️❤️🖤")
+    if (( actual_unpadded_key != 5 )); then
+        echo "  FAIL (unpadded key): input='🗝️ˣ04' expected=5 actual=$actual_unpadded_key"
+        all_passed=0
+    fi
+    if (( actual_unpadded_heart != 6 )); then
+        echo "  FAIL (unpadded heart): input='❤️❤️🖤' expected=6 actual=$actual_unpadded_heart"
+        all_passed=0
+    fi
+    HeroState heart_pad set 1
+
     if (( all_passed )); then
-        echo "  PASS: All emoji and symbol character widths match expected terminal cells."
+        echo "  PASS: All emoji and symbol character widths match expected terminal cells (both padded and unpadded modes)."
     fi
 }
 
@@ -76,6 +94,8 @@ function test_hud_box_alignment() {
     export HERO_GIT_DIRTY=1
     export HERO_GIT_REF="master"
 
+    HeroState heart_pad set 1
+    HeroState slots persist 2 key
     precmd >/dev/null 2>&1
 
     local -a lines=("${(@f)PROMPT}")
@@ -98,6 +118,54 @@ function test_hud_box_alignment() {
             echo "  PASS: HUD Box borders are perfectly aligned (all lines width $w1)."
         else
             echo "  FAIL: HUD Box borders are not aligned ($w1 vs $w2 vs $w3)."
+        fi
+
+        # Verify inner column alignment for item box corners:
+        # Top line start corner ┬ must align with Bottom line start corner └
+        # Top line end corner ┬ must align with Bottom line end corner ┘
+        local top_strip="${(%)boxLines[1]}"
+        top_strip="${top_strip//$'\e['[0-9;]##[a-zA-Z]/}"
+        local bot_strip="${(%)boxLines[2]}"
+        bot_strip="${bot_strip//$'\e['[0-9;]##[a-zA-Z]/}"
+        
+        local top_pre_corner="${top_strip%%┬*}"
+        local bot_pre_corner="${bot_strip%%└*}"
+        local c1=$(heroVisualWidth "$top_pre_corner")
+        local c2=$(heroVisualWidth "$bot_pre_corner")
+        if (( c1 == c2 )); then
+            echo "  PASS: Inner divider start corners ┬ and └ perfectly align at column $((c1 + 1))."
+        else
+            echo "  FAIL: Inner divider start corners misaligned (┬ at $((c1 + 1)) vs └ at $((c2 + 1)))."
+        fi
+
+        # Verify end corners: second ┬ in top line vs ┘ in bot line
+        local top_after_first="${top_strip#*┬}"
+        local top_between="${top_after_first%%┬*}"
+        local bot_between="${bot_strip#*└}"
+        bot_between="${bot_between%%┘*}"
+        local w_top_items=$(heroVisualWidth "$top_between")
+        local w_bot_items=$(heroVisualWidth "$bot_between")
+        if (( w_top_items == w_bot_items )); then
+            echo "  PASS: Inner divider end corners ┬ and ┘ perfectly align (items box width $w_top_items)."
+        else
+            echo "  FAIL: Inner divider end corners misaligned (top $w_top_items vs bot $w_bot_items)."
+        fi
+
+        # Verify equipment stack divider corners: Line 3 ┬ aligns with Line 4 ┘
+        local line4_strip="${(%)lines[${#lines}]}"
+        for cand in "${lines[@]}"; do
+            [[ "$cand" == *"└"* && "$cand" != *"🏹"* ]] && line4_strip="${(%)cand}"
+        done
+        line4_strip="${line4_strip//$'\e['[0-9;]##[a-zA-Z]/}"
+        local line3_strip="${(%)boxLines[3]}"
+        line3_strip="${line3_strip//$'\e['[0-9;]##[a-zA-Z]/}"
+
+        local eq_c3=$(( $(heroVisualWidth "${line3_strip%%┬*}") + 1 ))
+        local eq_c4=$(( $(heroVisualWidth "${line4_strip%%┘*}") + 1 ))
+        if (( eq_c3 == eq_c4 )); then
+            echo "  PASS: Equipment stack divider corners ┬ and ┘ perfectly align at column $eq_c3 with key equipped."
+        else
+            echo "  FAIL: Equipment stack corners misaligned (Line 3 ┬ at $eq_c3 vs Line 4 ┘ at $eq_c4)."
         fi
     else
         echo "  FAIL: Could not locate HUD box lines in PROMPT."

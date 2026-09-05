@@ -74,16 +74,18 @@ function HeroStatus() {
 
         # Usage: HeroStatus hearts
         hearts)
-            local heart_full="♥️"
+            local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+            local heart_full="❤️"
+            (( pad == 1 )) && heart_full="❤️ "
             local heart_empty="🖤"
             if (( HERO_GIT_IN_REPO )); then
                 if (( HERO_GIT_DIRTY )); then
-                    echo "${heart_full} ${heart_full} ${heart_empty}"
+                    echo "${heart_full}${heart_full}${heart_empty}"
                 else
-                    echo "${heart_full} ${heart_full} ${heart_full}"
+                    echo "${heart_full}${heart_full}${heart_full}"
                 fi
             else
-                echo "${heart_full} ${heart_empty} ${heart_empty}"
+                echo "${heart_full}${heart_empty}${heart_empty}"
             fi
             ;;
     esac

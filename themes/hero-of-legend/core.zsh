@@ -32,6 +32,8 @@ function _hero_resolve_state_file() {
 typeset -g hero_wallet_file="$(_hero_resolve_state_file "${HERO_WALLET_FILE:-$HOME/.hero_wallet}" "wallet")"
 typeset -g hero_cycle_file="$(_hero_resolve_state_file "${HERO_CYCLE_FILE:-$HOME/.hero_cycle}" "cycle")"
 typeset -g hero_slots_file="$(_hero_resolve_state_file "${HERO_SLOTS_FILE:-$HOME/.hero_slots}" "slots")"
+typeset -g hero_sound_file="$(_hero_resolve_state_file "${HERO_SOUND_FILE:-$HOME/.hero_sound}" "sound")"
+typeset -g hero_heart_pad_file="$(_hero_resolve_state_file "${HERO_HEART_PAD_FILE:-$HOME/.hero_heart_pad}" "heart_pad")"
 
 # 3. String & Number Utilities (Pure Native Zsh, Zero Subprocesses)
 function heroTrim() {
@@ -80,10 +82,22 @@ function heroVisualWidth() {
         fi
         
         # Wide codepoints (emojis, east asian characters, symbols)
-        if (( (code >= 0x1F000 && code <= 0x1FAFF) || \
-              (code >= 0x2600 && code <= 0x278F) || \
+        local -i is_wide=0
+        if (( code == 0x1F5DD )); then
+            # Old key: on Linux/glibc wcwidth is 1, so if padded it occupies 1 column (+ 1 space = 2)
+            local -i current_pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+            (( current_pad == 0 )) && is_wide=1
+        elif (( (code >= 0x1F000 && code <= 0x1FAFF) || \
               (code >= 0x2E80 && code <= 0x9FFF) || \
               (code >= 0xF900 && code <= 0xFAFF) )); then
+            is_wide=1
+        elif (( code == 0x2764 || code == 0x2665 )); then
+            # If heart padding is disabled (Unicode 9+ mode), red heart occupies 2 columns directly
+            local -i current_pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+            (( current_pad == 0 )) && is_wide=1
+        fi
+
+        if (( is_wide )); then
             (( width += 2 ))
         else
             (( width += 1 ))
