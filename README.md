@@ -1,5 +1,9 @@
 <div align="center">
 
+<img src="themes/hero-of-legend/splash.png" alt="The Legend of Zshell - Hero of Legend Splash Screen and HUD" width="700">
+
+<br/>
+
 ```
        ()   ╔╦╗╦ ╦╔═╗  ╦  ╔═╗╔═╗╔═╗╔╗╔╔╦╗  ╔═╗╔═╗
        )(    ║ ╠═╣║╣   ║  ║╣ ║ ╦║╣ ║║║ ║║  ║ ║╠╣
