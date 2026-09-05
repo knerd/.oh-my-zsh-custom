@@ -373,19 +373,35 @@ Train your keystrokes, avoid reckless typos, and amass a fortune of 999 Rupees!
 
 ## 9. COMPANIONS OF HYRULE ("HEY, LISTEN!")
 
-Your quest is dangerous, but you need not walk alone. The theme features dynamic companion dialogue rendered directly into the prompt frame:
+Your quest is dangerous, but you need not walk alone. The theme features a living cast of Hyrule companions who offer wisdom, shortcut tips, and context-aware alerts right above your prompt line:
 
-| Icon | Companion | Role / Lore | Sage Wisdom ("Hey, Listen!") |
-| :---: | :--- | :--- | :--- |
-| 🧚 | **Navi** | Fairy Guide | *"Hey! Listen! Check your git status before leaving the dungeon!"* |
-| 🧙‍♂️ | **Old Wizard** | Ancient Hermit | *"It's dangerous to go alone! Take this hammer (A)."* |
-| 🦁 | **King of Red Lions** | Talking King Boat | *"The Great Sea is vast. You will need a boat."* |
-| 👑 | **Princess Zelda** | Hylian Princess | *"Take this bottle with you. It will be useful."* |
-| 🎭 | **Happy Mask Salesman** | Clock Town Collector | *"Believe in your strengths... believe..."* |
-| 👾 | **Error** | Mysterious Townsman | *"I am Error. Grumble, grumble..."* |
+### 🎭 Resident Companions & Authentic In-Game Quotes
 
-* **Toggle Companions**: Run `n` to toggle Navi's messages on/off at any time.
-* **Custom Invocations**: Export `HEY_LISTEN="Your message here"` or `HOL_NPC=wizard` to project messages from specific sages!
+| Icon | Companion | Key | Actual Theme Quotes |
+| :---: | :--- | :---: | :--- |
+| 🧙 | **Old Wizard** | `wizard` | • *"It's dangerous to go alone. Take this!"*<br/>• *"Master the Master Sword, and the world is yours."*<br/>• *"Time passes, people move.... Like a river's flow, it never ends."*<br/>• *"A hero's journey is never truly finished."*<br/>• *"Everything has its own pace. Just follow your own."* |
+| 🧚 | **Fairy (Navi)** | `fairy` | • *"There is a hidden secret nearby!"*<br/>• *"Hey, look!"*<br/>• *"Hey! Use 'L' to light up your directory with the Magic Lantern!"*<br/>• *"The Lantern (f) can find anything hidden in the dark!"*<br/>• *"Hey! The Boomerang (P) is great for returning your changes to the remote!"* |
+| 👸 | **The King** | `king` | • *"He who wields the Master Sword shall be the Hero of Time."*<br/>• *"The Great Sea is vast. You will need a boat."*<br/>• *"Well excuse me, princess!"*<br/>• *"The 3-day cycle is real! Reset the time with the Ocarina (st)."* |
+| 🧝‍♀️ | **Princess Zelda** | `queen` | • *"Take this with you! It's one of my most precious possessions."*<br/>• *"Take this bottle. It will be useful."*<br/>• *"Your Rupees (♦️) grow with every successful command. Don't let the villains take them!"*<br/>• *"Keep an eye on the time. The 4th day brings the Moon Crash!"* |
+| 🧝🏻 | **Secret Elf** | `elf` | • *"Zshhhhh, It's a secret to everybody. (z+)"*<br/>• *"Use your magic key! (k[2-9])"*<br/>• *"Use this trumpet (lt) to open magic portals!"*<br/>• *"The Magic Book (h) is powerful. Use 'h search_term' to find old spells."*<br/>• *"Small keys (k2, k3...) help you ascend through the directory levels."* |
+| 🎭 | **Mask Salesman** | `mask` | • *"You've met with a terrible fate, haven't you?"*<br/>• *"Believe in your strengths... believe..."*<br/>• *"Masks (aliases) can change how you interact with the world."* |
+| 🦹 | **Villain / Error** | `villain` | • *"I am Error."*<br/>• *"GRUMBLE, GRUMBLE..."* |
+| 🐳 | **Wind Fish** | `whale` | • *"Shadow and Light are two sides of the same coin."* |
+
+### 🧠 Context-Sensitive Triggers ("Smart Companion Advisor")
+
+Companions don't just speak at random—they actively monitor your terminal environment in real-time:
+* **Unpushed Commits (5+)**: 🧚 *"Whoa! X unpushed commits! Use 'P'!"*
+* **Uncommitted Changes (Dirty)**: 🧚 *"Uncommitted changes! Use 'C' to commit."*
+* **Low Disk Space (>90% full)**: 🐲 *"DANGER! Disk space is running low! (X% full)"*
+* **Missing Node Modules**: 🧚 *"I see a package.json but no node_modules. Run 'npm install'?"*
+* **Rust Repositories**: 🦸 *"A Rust project! Be safe out there."*
+* **Python Outside Virtualenv**: 🧙 *"You are not in a virtual environment. dangerous magic surrounds you."*
+* **Safe Deletion Tips**: Run `rm` $\rightarrow$ 🧚 *"Use b+ instead of rm to safely add files to your bomb bag (trash)."*
+* **Climbing Floors**: Run `cd ..` $\rightarrow$ 🧝🏻 *"Use your magic key! (k[2-9])"*
+
+* **Toggle Companions**: Run `n` to toggle Navi and companion messages on or off at any time.
+* **Manual Invocation**: Export `HEY_LISTEN="Your custom message"` or `HOL_NPC=wizard` to summon a dialogue directly from any sage!
 
 ---
 
