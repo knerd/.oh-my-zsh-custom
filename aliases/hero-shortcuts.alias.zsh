@@ -55,10 +55,10 @@ alias z="CL; hud"
 alias x='exit'
 
 # Magic Arrows
-alias arw="~/Downloads; ls -l; echo '🏹 ---> Nice shot! Straight to Downloads. 🎯'"
-alias a=arw
+alias arw="cd ~/Downloads 2>/dev/null || cd ~; ls -l; echo '🏹 ---> Nice shot! Straight to Downloads. 🎯'"
+alias a="arw"
 alias a!="hero-fire-arrows"
-alias a+="hero-light-arrow"
+alias a+="source hero-light-arrow"
 alias a-="hero-ice-arrow"
 
 # Magic Bomb
@@ -85,6 +85,9 @@ alias k9="k 9"
 alias mark="source hero-magic-marker"
 alias m="mark"
 alias m-="mark -d"
+
+# Magic Font (Nerd Font Provisioner)
+alias fn="hero-font"
 
 # Find things
 # Find a file recursively
@@ -144,7 +147,7 @@ declare -A HERO_HELP=(
     # HUD
     [a]="🏹 a  - Arrows: # of files in ~/Downloads; a/arw is a direct shot to ~/Downloads"
     [b]="💣 b  - Magic Bombs: # of Gigs in Trash; b/bomb blows up the trash bin, b+ [FILE] moves file to trash, b- lists trash"
-    [k]="🗝️ k  - Magic Keys: # of child directorys; k[2-9] # of keys cd .. that many times."
+    [k]="🗝️ k  - Magic Keys: # of child directories; k[2-9] # of keys cd .. that many times."
     [z]="🗡️ z  - Magic Sword: Wipes the screen, shows your inventory, and awaits your next command."
     [x]="💥 x  - Quake: Close the terminal"
 
@@ -243,13 +246,13 @@ alias \?="echo '
 │ ${HERO_HELP[p]}
 │ ${HERO_HELP[S]}
 ├ 🤺 EQUIPMENT ──────────────────────────────────────────────────────────────────────────────────
-│ 🥾 ?  - Pegus Boots: Run this Help menu, become uber-micro-fast by honing in on your CLI skills. 
+│ 🥾 ?  - Pegasus Boots: Run this Help menu, become uber-micro-fast by honing in on your CLI skills. 
 │ ${HERO_HELP[G]}
 │ ${HERO_HELP[v]}
 │ ${HERO_HELP[t]}
-├ EQUIPED ──────────────────────────────────────────────────────────────────────────────────
+├ EQUIPPED ──────────────────────────────────────────────────────────────────────────────────
 │ 💍 Pendant: Shows if hero-of-legend aliases file is installed (R to reload)
-│ 🛡️ Sheild: Shows if all hero-of-legend bin scripts have been downloaded 
+│ 🛡️ Shield: Shows if all hero-of-legend bin scripts have been downloaded 
 │ 👕 Tunic: This Theme
 │ 🧰 z+ Magic Chest: ${HERO_HELP["z+"]}
 └─────────────────────────────────────────────────────────────────────────────────────────
