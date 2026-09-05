@@ -82,6 +82,49 @@ alias a!="hero-fire-arrows"
 alias a+="source hero-light-arrow"
 alias a-="hero-ice-arrow"
 
+# Light Arrow Warp Helper
+if ! typeset -f _hero_warp >/dev/null 2>&1; then
+  _hero_play_warp_sound() {
+    local custom_path="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+    if command -v HeroState >/dev/null 2>&1; then
+      if (( $(HeroState sound get 2>/dev/null || echo 1) == 1 )); then
+        HeroState sound play whistle 2>/dev/null
+      fi
+    elif command -v hero-sound >/dev/null 2>&1; then
+      if [[ "$(hero-sound get 2>/dev/null)" != "0" ]]; then
+        hero-sound play whistle 2>/dev/null &
+      fi
+    elif [[ -x "$custom_path/bin/hero-song-of-time" ]]; then
+      local sound_on=1
+      if [[ -n "$HERO_SECRET_SOUND" && "$HERO_SECRET_SOUND" =~ ^(0|off|false|no)$ ]]; then
+        sound_on=0
+      elif [[ -f "${HERO_SOUND_FILE:-$HOME/.hero_sound}" && "$(<"${HERO_SOUND_FILE:-$HOME/.hero_sound}")" == "0" ]]; then
+        sound_on=0
+      fi
+      if (( sound_on == 1 )); then
+        if [[ -n "$ZSH_VERSION" ]]; then
+          "$custom_path/bin/hero-song-of-time" whistle >/dev/null 2>&1 &|
+        else
+          ("$custom_path/bin/hero-song-of-time" whistle >/dev/null 2>&1 &)
+        fi
+      fi
+    fi
+  }
+
+  _hero_warp() {
+    local target="$1"
+    local label="$2"
+    cd "$target" || return
+    ls -la
+    echo "🏹 *Whooosh* >>>----a.${label}-----> 🎯"
+    export HOL_NPC=wizard
+    export HEY_LISTEN="Great shot!"
+    _hero_play_warp_sound
+  }
+
+  alias hero-warp='_hero_warp'
+fi
+
 # Magic Bomb
 alias bomb="hero-magic-bomb"
 alias b=bomb

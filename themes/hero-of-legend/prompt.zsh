@@ -64,7 +64,9 @@ function precmd() {
         "$(HeroUI bombs)"
         "$(HeroUI rupee)"
         "┬"
-        "${hero_areas[compass]} %F{green}$(HeroUI compass $HERO_GIT_IN_REPO)%f"
+        "$area_icon"
+        "$area_text"
+        "$(HeroUI room_stats)"
     )
     
     # Line 2 (Values Row)
@@ -102,7 +104,7 @@ function precmd() {
     local equipment_icons="${equipment_raw[2]}"
     
     # Build Interaction & Prompt Line
-    local interaction_content=" $area_icon $area_text %F{green}${hero_icons[sword]}ƶ %f"
+    local interaction_content=" ${hero_areas[compass]} $(HeroUI compass $HERO_GIT_IN_REPO) %F{green}${hero_icons[sword]}ƶ %f"
     local cursor=$'%{\e[5 q%}'
     
     local box_output
