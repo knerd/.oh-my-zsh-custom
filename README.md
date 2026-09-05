@@ -31,7 +31,7 @@
 [![Reddit Approved](https://img.shields.io/badge/Reddit-r%2Funixporn%20%7C%20r%2Fzsh-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://reddit.com/r/unixporn)
 [![License](https://img.shields.io/badge/License-GPL--3.0%20%2F%20MIT-success?style=for-the-badge)](https://github.com/knerd/.oh-my-zsh-custom)
 [![GitHub Stars](https://img.shields.io/github/stars/knerd/.oh-my-zsh-custom?style=for-the-badge&color=gold)](https://github.com/knerd/.oh-my-zsh-custom/stargazers)
-[![Sponsor](https://img.shields.io/badge/Sponsor-Buy%20Me%20A%20Potion-ff69b4?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/knerd)
+[![Sponsor](https://img.shields.io/badge/Sponsor-Buy%20Me%20A%20Potion-ff69b4?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/xopherdeep)
 
 ---
 
