@@ -38,7 +38,7 @@ alias heroSplash="clear; echo '
 
 alias o='HeroInventory open'
 alias st='HeroState cycle reset'
-alias z+='z; bash -c "$(curl -fsSL https://raw.githubusercontent.com/Knerd/.oh-my-zsh-custom/master/bin/hero-magic-chest)"'
+alias z+='z; if command -v hero-magic-chest >/dev/null 2>&1; then hero-magic-chest; else bash -c "$(curl -fsSL https://raw.githubusercontent.com/Knerd/hero-bin/master/hero-magic-chest)"; fi'
 alias '???'='export HEY_LISTEN="???";'
 
 # ------------------------------------------------------------------------------
@@ -149,11 +149,12 @@ typeset -a hero_cat_do=( boots glove flippers crystal  )
 typeset -a hero_cat_legend=(sword shield tunic backpack  )
 typeset -a hero_cat_soon=(flippers somaria powder amulet)
 typeset -a hero_cat_special=(key ring portal chest )
-# --- Tri-Color Constants ---
-tri_top_norm="%F{yellow} ▲ %f"
-tri_bot_norm="%F{yellow}▲ ▲%f"
-tri_top_git="%F{yellow}⯆ ⯆%f"
-tri_bot_git="%F{yellow} ⯆ %f"
+# --- Triforce (Tri-Color) Constants ---
+tri_color="${TRI_COLOR:-yellow}"
+tri_top_norm="%B%F{${tri_color}} ▲ %f%b"
+tri_bot_norm="%B%F{${tri_color}}▲ ▲%f%b"
+tri_top_git="%B%F{${tri_color}}⯆ ⯆%f%b"
+tri_bot_git="%B%F{${tri_color}} ⯆ %f%b"
 
 # --- State File Paths ---
 hero_wallet_file="$HOME/.hero_wallet"
