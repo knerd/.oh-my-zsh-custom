@@ -210,9 +210,10 @@ function HeroState() {
                     fi
                     ;;
                 play)
+                    local song="${1:-startup}"
                     local bin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/bin"
                     if [[ -x "$bin_dir/hero-song-of-time" ]]; then
-                        "$bin_dir/hero-song-of-time" startup >/dev/null 2>&1 &|
+                        "$bin_dir/hero-song-of-time" "$song" >/dev/null 2>&1 &|
                     fi
                     ;;
             esac
