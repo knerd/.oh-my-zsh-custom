@@ -72,9 +72,9 @@ Most terminal users want a lean, simple, distraction-free prompt. I took the exa
 
 After using it day in and day out for over two decades, I’ve grown to love it so much that I literally cannot work in any other shell environment. With the recent help of AI, I finally sat down, refactored and cleaned up the codebase, squashed decades of edge-case bugs, and got everything to a place where I finally feel good enough about it to share it with the world.
 
-Even if no one else uses it, and yes, I know it is the complete and utter opposite of a lean terminal—that's not the point. 
+Even if no one else uses it, and yes, I know it is the complete and utter opposite of a lean terminal, but that's not the point! 
 
-My inspiration originally came from the classic **Zelda NES / SNES HUD**, where you had the **A** and **B** buttons for your equipped items. I wanted single-letter button clicks for my daily Git commands (`A` for add, `B` for branch, `C` for commit, `P` for push), and that simple dream extended into all of these other Zelda-inspired tools, sounds, and mini-games. 
+I wanted something that was fun and consistently feeds me dopamine. My inspiration originally came from the classic **Zelda NES / SNES HUD**, where you had the **A** and **B** buttons for your equipped items. I wanted single-letter button clicks for my daily Git commands (`A` for add, `B` for branch, `C` for commit, `P` for push), and that simple dream extended into all of these other Zelda-inspired tools, sounds, and mini-games. 
 
 I honestly love the **Light Arrows (`a+`)**—it makes zipping around my computer stupid fast and genuinely fun. 
 
