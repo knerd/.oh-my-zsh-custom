@@ -1,61 +1,74 @@
-#### SYSTEM SHORTCUTS
-#### UPDATE 
-# distro specific  - Debian / Ubuntu and friends #
-# install with apt-get
-alias apt-get="sudo apt-get"
-alias updatey="sudo apt-get --yes"
+#### SYSTEM SHORTCUTS ####
 
-# update on one command
+# Distro-specific - Debian/Ubuntu and friends
+alias apt-get='sudo apt-get'
+alias updatey='sudo apt-get --yes'
+
+# Update on one command
 alias update='sudo apt-get update && sudo apt-get upgrade'
 
-#### TUNE SUDO AND SU
-# become root #
+# Tune sudo and su
 alias root='sudo -i'
 alias su='sudo -i'
 
-# GET SYSTEM MEMORY 
-## pass options to free ##
-alias meminfo='free -m -l -t'
+#### SYSTEM MONITORING ####
 
-## get top process eating memory
+# Get system memory
+alias meminfo='free -m -l -t'
 alias psmem='ps auxf | sort -nr -k 4'
 alias psmem10='ps auxf | sort -nr -k 4 | head -10'
 
-# CPU USAGE
-## get top process eating cpu ##
+# CPU usage
 alias pscpu='ps auxf | sort -nr -k 3'
 alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
-
-## Get server cpu info ##
 alias cpuinfo='lscpu'
 
-## older system use /proc/cpuinfo ##
-# alias cpuinfo='less /proc/cpuinfo'
-
-# GPU MEMORY 
-## get GPU ram on desktop / laptop##
+# GPU memory
 alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 
-#### NETWORKING
+#### NETWORKING ####
 
-#### Debug web server / cdn problems with curl
-# get web server headers #
+# Debug web server/CDN problems with curl
 alias header='curl -I'
-
-# find out if remote server supports gzip / mod_deflate or not #
 alias headerc='curl -I --compress'
-#### CONTROL OUTPUT OF NETWORKING TOOL CALLED PING
-# Stop after sending count ECHO_REQUEST packets #
+
+# Control output of networking tool called ping
 alias ping='ping -c 5'
-# Do not wait interval 1 second, go fast #
 alias fastping='ping -c 100 -s.2'
 
-#### SHOW OPEN PORTS
-# Use netstat command to quickly list all TCP/UDP port on the server:
+# Show open ports
 alias ports='netstat -tulanp'
 
-#### Create new set of commands
+#### CREATE NEW SET OF COMMANDS ####
+
 alias path='echo -e ${PATH//:/\\n}'
 alias now='date +"%T"'
-alias nowtime=now
+alias nowtime='now'
 alias nowdate='date +"%d-%m-%Y"'
+
+#### PACKAGE MANAGEMENT ####
+
+# Update system packages and dependencies
+alias sysupdate='sudo apt-get update && sudo apt-get upgrade'
+alias sysupgrade='sudo apt-get dist-upgrade'
+
+# Update NPM and global packages
+alias npmuninstall='npm ls -g --depth=0 | awk -F/ "/node_modules/ && !/\/npm$/ {print \$NF}" | xargs npm -g rm'
+alias npmuninstallall='sudo rm -rf /usr/local/{lib/node{,/.npm,_modules},bin,share/man}/{npm*,node*,man1/node*}'
+alias npmupdate='npm update -g'
+alias npmupdatenpms='npmuninstall && npmupdate'
+
+# Update Yarn and global packages
+alias yarnuninstall='yarn global remove $(yarn global list | grep "@.*:" | awk -F/ "{print \$NF}")'
+alias yarnupdate='yarn global upgrade'
+alias yarnupdatenpms='yarnuninstall && yarnupdate'
+
+alias yolo=~/yolo-ai-cmdbot/yolo.py
+alias computer=~/yolo-ai-cmdbot/yolo.py #optional
+
+# Local Tunnel No Machine
+alias xps="lt --port 4443 --subdomain xp-desktop --local-https --allow-invalid-cert "
+
+
+# mock pod
+alias pod="echo 'mock pod'"

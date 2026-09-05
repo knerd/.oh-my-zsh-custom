@@ -2,8 +2,6 @@
 
 # make parent directories
 alias mkdir="mkdir -pv"
-
-# SET VIM AS DEFAULT
 alias vi=vim
 alias svi='sudo vi'
 alias vis='vim "+set si"'
@@ -38,3 +36,6 @@ alias ln='ln -i'
 alias chown='chown --preserve-root'
 alias chmod='chmod --preserve-root'
 alias chgrp='chgrp --preserve-root'
+
+alias autogpt="python $HOME/www/x/Auto-GPT/scripts/main.py"
+alias gpt="autogpt"
