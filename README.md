@@ -19,7 +19,6 @@
 
 # INSTRUCTION BOOKLET
 ### *SUPER OH-MY-ZSH ENTERTAINMENT SYSTEM*
-**MODEL NO. SNS-ZSH-USA-1 · QUANTUM EDITION v2026.2.0**
 
 [![Zsh Version](https://img.shields.io/badge/zsh-v5.0%2B-F1502F?style=for-the-badge&logo=zsh&logoColor=white)](https://www.zsh.org/)
 [![Oh My Zsh](https://img.shields.io/badge/Oh--My--Zsh-Custom%20Suite-blueviolet?style=for-the-badge&logo=gnubash&logoColor=white)](https://ohmyz.sh/)
