@@ -35,18 +35,6 @@
 
 ---
 
-```
-   _________________________________________________________
-  /                                                         \
- |   <<< OFFICIAL OH-MY-ZSH SEAL OF HYRULE QUALITY >>>       |
- |                                                           |
- |   This seal is your assurance that Nintendo-grade         |
- |   craftsmanship, sub-millisecond prompt speed, and        |
- |   authentic 16-bit chiptune audio have been sealed into   |
- |   this custom configuration. Always look for this seal    |
- |   when venturing into the depths of your terminal.        |
-  \_________________________________________________________/
-```
 
 *WARNING: PLEASE READ THIS ENTIRE INSTRUCTION BOOKLET CAREFULLY BEFORE VENTURING INTO THE COMMAND LINE DUNGEON. KEEP THIS MANUAL CLOSE AT HAND FOR EMERGENCY SWORD TECHNIQUES, OCARINA SONGS, AND BOMB HANDLING.*
 
