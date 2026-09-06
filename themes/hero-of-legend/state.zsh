@@ -217,6 +217,7 @@ function HeroState() {
                 off|disable)
                     HeroState sound set 0
                     pkill -f "hero-song-of-time" 2>/dev/null || true
+                    pkill -f "hero_chime_" 2>/dev/null || true
                     print -P "%F{yellow}🔇 Zelda secret sound disabled.%f"
                     ;;
                 toggle)
@@ -224,6 +225,7 @@ function HeroState() {
                     if (( current == 1 )); then
                         HeroState sound set 0
                         pkill -f "hero-song-of-time" 2>/dev/null || true
+                        pkill -f "hero_chime_" 2>/dev/null || true
                         print -P "%F{yellow}🔇 Zelda secret sound disabled.%f"
                     else
                         HeroState sound set 1
@@ -289,6 +291,7 @@ function HeroState() {
                     ;;
                 stop)
                     pkill -f "hero-song-of-time" 2>/dev/null || true
+                    pkill -f "hero_chime_" 2>/dev/null || true
                     print -P "%F{yellow}⏹️ Audio stopped.%f"
                     ;;
                 whistle|warp)

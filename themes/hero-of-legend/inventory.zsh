@@ -49,7 +49,7 @@ function HeroInventory() {
             case "$property" in
                 icon)
                     local icon="${hero_icons[$item_key]:-${default:-❓}}"
-                    if [[ "$item_key" == "key" || "$item_key" == "ladder" ]]; then
+                    if [[ "$item_key" == "key" || "$item_key" == "ladder" || "$item_key" == "sword" || "$item_key" == "shield" ]]; then
                         local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
                         (( pad == 1 )) && icon="${icon} "
                     fi
@@ -292,7 +292,7 @@ function HeroInventory() {
                 [[ -z "$m_label" ]] && m_label="$m_title"
                 menu_options+=("$m_icon  $m_label")
             done
-            menu_options+=("🔎  Search All Items" "⬅️  Back")
+            menu_options+=("🔎  Search All Items" "⬅️  Back (Esc)")
 
             local category
             category=$(printf '%s\n' "${menu_options[@]}" | gum choose \
@@ -302,7 +302,7 @@ function HeroInventory() {
                 --selected.foreground 214 \
                 --height 10)
             
-            [[ -z "$category" || "$category" == *"Back"* ]] && { HeroInventory _equip_with_gum; return; }
+            [[ -z "$category" || "$category" == *"Back"* || "$category" == *"Esc"* ]] && { HeroInventory _equip_with_gum; return; }
             
             local -a item_list
             if [[ "$category" == "🔎  Search All Items" ]]; then
@@ -335,7 +335,7 @@ function HeroInventory() {
                 item_btn=$(HeroInventory get "$item_key" button)
                 display_items+=("$item_icon  $item_name [$item_btn]")
             done
-            display_items+=("⬅️   Back to Categories")
+            display_items+=("⬅️   Back to Categories (Esc)")
             
             local selected_display
             if [[ "$category" == "🔎  Search All Items" ]]; then
@@ -355,7 +355,7 @@ function HeroInventory() {
                     --height 12)
             fi
             
-            [[ -z "$selected_display" || "$selected_display" == "⬅️   Back to Categories" ]] && { HeroInventory _equip_item_flow; return; }
+            [[ -z "$selected_display" || "$selected_display" == *"Back"* || "$selected_display" == *"Esc"* ]] && { HeroInventory _equip_item_flow; return; }
             
             local selected_item="" item_key icon name btn
             for item_key in "${item_list[@]}"; do
@@ -426,7 +426,7 @@ function HeroInventory() {
                     slot_choices+=("Slot $slot_num: ⬜ Empty")
                 fi
             done
-            slot_choices+=("⬅️  Cancel")
+            slot_choices+=("⬅️  Cancel (Esc)")
             
             local slot_choice
             slot_choice=$(printf '%s\n' "${slot_choices[@]}" | gum choose \
@@ -436,7 +436,7 @@ function HeroInventory() {
                 --selected.foreground 214 \
                 --height 8)
             
-            [[ -z "$slot_choice" || "$slot_choice" == "⬅️  Cancel" ]] && { HeroInventory _equip_with_gum; return; }
+            [[ -z "$slot_choice" || "$slot_choice" == *"Cancel"* || "$slot_choice" == *"Esc"* ]] && { HeroInventory _equip_with_gum; return; }
             
             local target_slot="${slot_choice:5:1}"
             local existing_item=$(HeroState slots get $target_slot)
@@ -444,7 +444,7 @@ function HeroInventory() {
             [[ -n "$existing_item" ]] && confirm_msg="Replace $(HeroInventory get "$existing_item" icon) $(HeroInventory get "$existing_item" name) with $sel_icon $sel_name?"
             
             echo ""
-            if gum confirm "$confirm_msg" --affirmative "⚔️ Equip!" --negative "Cancel"; then
+            if gum confirm "$confirm_msg" --affirmative "⚔️ Equip!" --negative "Cancel (Esc)"; then
                 gum spin --spinner dot --title "⚡ Channeling ancient power..." -- sleep 0.6
                 HeroState slots persist "$target_slot" "$selected_item"
                 
@@ -482,7 +482,7 @@ function HeroInventory() {
                     slot_displays+=("Slot $slot_num: ⬜ Empty")
                 fi
             done
-            slot_displays+=("⬅️  Cancel")
+            slot_displays+=("⬅️  Cancel (Esc)")
             
             local first_slot
             first_slot=$(printf '%s\n' "${slot_displays[@]}" | gum choose \
@@ -492,7 +492,7 @@ function HeroInventory() {
                 --selected.foreground 81 \
                 --height 8)
             
-            [[ -z "$first_slot" || "$first_slot" == "⬅️  Cancel" ]] && { HeroInventory _equip_with_gum; return; }
+            [[ -z "$first_slot" || "$first_slot" == *"Cancel"* || "$first_slot" == *"Esc"* ]] && { HeroInventory _equip_with_gum; return; }
             
             local second_slot
             second_slot=$(printf '%s\n' "${slot_displays[@]}" | gum choose \
@@ -502,7 +502,7 @@ function HeroInventory() {
                 --selected.foreground 214 \
                 --height 8)
             
-            [[ -z "$second_slot" || "$second_slot" == "⬅️  Cancel" ]] && { HeroInventory _equip_with_gum; return; }
+            [[ -z "$second_slot" || "$second_slot" == *"Cancel"* || "$second_slot" == *"Esc"* ]] && { HeroInventory _equip_with_gum; return; }
             
             local slot1="${first_slot:5:1}"
             local slot2="${second_slot:5:1}"
@@ -556,7 +556,7 @@ function HeroInventory() {
                 return
             fi
             
-            slot_displays+=("⬅️  Cancel")
+            slot_displays+=("⬅️  Cancel (Esc)")
             
             local slot_choice
             slot_choice=$(printf '%s\n' "${slot_displays[@]}" | gum choose \
@@ -566,7 +566,7 @@ function HeroInventory() {
                 --selected.foreground 203 \
                 --height 8)
             
-            [[ -z "$slot_choice" || "$slot_choice" == "⬅️  Cancel" ]] && { HeroInventory _equip_with_gum; return; }
+            [[ -z "$slot_choice" || "$slot_choice" == *"Cancel"* || "$slot_choice" == *"Esc"* ]] && { HeroInventory _equip_with_gum; return; }
             
             local target_slot="${slot_choice:5:1}"
             local item_to_remove=$(HeroState slots get $target_slot)
@@ -574,7 +574,7 @@ function HeroInventory() {
             local remove_name=$(HeroInventory get "$item_to_remove" name)
             
             echo ""
-            if gum confirm "Remove $remove_icon $remove_name from Slot $target_slot?" --affirmative "🗑️ Remove" --negative "Cancel"; then
+            if gum confirm "Remove $remove_icon $remove_name from Slot $target_slot?" --affirmative "🗑️ Remove" --negative "Cancel (Esc)"; then
                 gum spin --spinner dot --title "Unequipping..." -- sleep 0.4
                 HeroState slots persist "$target_slot" ""
                 gum style --foreground 82 "  ✅ Slot $target_slot is now empty."
@@ -630,7 +630,7 @@ function HeroInventory() {
                 content+="│  $icon  $(printf '%-16s' "$name") [$btn]  ${desc#*:}\n"
             done
             content+="└───────────────────────────────────────────────────────────────┘\n\n"
-            content+="                    Press 'q' to exit the compendium\n"
+            content+="                 Press 'q' or 'Esc' to exit the compendium\n"
             
             echo -e "$content" | gum pager
             ;;

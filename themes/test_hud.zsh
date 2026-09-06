@@ -435,19 +435,79 @@ function test_equipment_screen_alignment() {
 
 function test_menu_esc_option() {
     local inv_file="$ZSH_CUSTOM/themes/hero-of-legend/inventory.zsh"
+    local check_failed=0
+
+    # 1. Main menu ('o')
     if grep -q '"❌  Exit Chamber (Esc)"' "$inv_file"; then
-        echo "  PASS: Main menu option includes '❌  Exit Chamber (Esc)'"
+        echo "  PASS: Main menu includes '❌  Exit Chamber (Esc)'"
     else
-        echo "  FAIL: Main menu option does not include '❌  Exit Chamber (Esc)'"
-        all_passed=0
+        echo "  FAIL: Main menu does not include '❌  Exit Chamber (Esc)'"
+        check_failed=1
     fi
 
     if grep -q '\*"Esc"\*|\*"Exit Chamber"\*)' "$inv_file"; then
-        echo "  PASS: Case statement pattern matches *\"Esc\"*|*\"Exit Chamber\"*"
+        echo "  PASS: Main menu case pattern matches *\"Esc\"*|*\"Exit Chamber\"*"
     else
-        echo "  FAIL: Case statement does not properly match Esc"
-        all_passed=0
+        echo "  FAIL: Main menu case pattern does not match Esc"
+        check_failed=1
     fi
+
+    # 2. Category selection
+    if grep -q '"⬅️  Back (Esc)"' "$inv_file"; then
+        echo "  PASS: Category selection includes '⬅️  Back (Esc)'"
+    else
+        echo "  FAIL: Category selection does not include '⬅️  Back (Esc)'"
+        check_failed=1
+    fi
+
+    # 3. Item selection
+    if grep -q '"⬅️   Back to Categories (Esc)"' "$inv_file"; then
+        echo "  PASS: Item selection includes '⬅️   Back to Categories (Esc)'"
+    else
+        echo "  FAIL: Item selection does not include '⬅️   Back to Categories (Esc)'"
+        check_failed=1
+    fi
+
+    # 4. Destination slot selection & Equip confirm
+    if grep -q 'slot_choices+=("⬅️  Cancel (Esc)")' "$inv_file"; then
+        echo "  PASS: Destination slot choice includes '⬅️  Cancel (Esc)'"
+    else
+        echo "  FAIL: Destination slot choice does not include '⬅️  Cancel (Esc)'"
+        check_failed=1
+    fi
+
+    if grep -q 'confirm ".*" --affirmative "⚔️ Equip!" --negative "Cancel (Esc)"' "$inv_file"; then
+        echo "  PASS: Equip confirm dialog includes negative 'Cancel (Esc)'"
+    else
+        echo "  FAIL: Equip confirm dialog does not include negative 'Cancel (Esc)'"
+        check_failed=1
+    fi
+
+    # 5. Swap slots selection
+    if grep -q 'slot_displays+=("⬅️  Cancel (Esc)")' "$inv_file"; then
+        echo "  PASS: Swap slots flow includes '⬅️  Cancel (Esc)'"
+    else
+        echo "  FAIL: Swap slots flow does not include '⬅️  Cancel (Esc)'"
+        check_failed=1
+    fi
+
+    # 6. Unequip slot selection & Unequip confirm
+    if grep -q 'confirm "Remove .*?" --affirmative "🗑️ Remove" --negative "Cancel (Esc)"' "$inv_file"; then
+        echo "  PASS: Unequip confirm dialog includes negative 'Cancel (Esc)'"
+    else
+        echo "  FAIL: Unequip confirm dialog does not include negative 'Cancel (Esc)'"
+        check_failed=1
+    fi
+
+    # 7. Compendium exit hint
+    if grep -q "Press 'q' or 'Esc' to exit the compendium" "$inv_file"; then
+        echo "  PASS: Item compendium hint includes 'q' or 'Esc'"
+    else
+        echo "  FAIL: Item compendium hint does not include 'Esc'"
+        check_failed=1
+    fi
+
+    (( check_failed )) && all_passed=0
 }
 
 echo "\n========== VERIFICATION OUTPUT =========="

@@ -109,7 +109,10 @@ function precmd() {
     local equipment_icons="${equipment_raw[2]}"
     
     # Build Interaction & Prompt Line
-    local interaction_content=" ${hero_areas[compass]} $(HeroUI compass $HERO_GIT_IN_REPO) %F{green}${hero_icons[sword]}ƶ %f"
+    local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+    local sword_sp=" "
+    (( pad == 1 )) && sword_sp="  "
+    local interaction_content=" ${hero_areas[compass]} $(HeroUI compass $HERO_GIT_IN_REPO) %F{green}${hero_icons[sword]}${sword_sp}ƶ %f"
     local cursor=$'%{\e[5 q%}'
     
     local box_output
