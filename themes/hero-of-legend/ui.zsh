@@ -5,6 +5,114 @@
 # Single Responsibility: HUD formatters, color gradients & box layout engine.
 # ------------------------------------------------------------------------------
 
+# ── Fork-free render helpers (set REPLY) ──────────────────────────────────────
+# These run on every 1s timer tick, so they must never spawn a subshell.
+
+# Usage: _hero_tcolor VALUE MAX → REPLY = %F{#rrggbb} (green → yellow → red)
+function _hero_tcolor() {
+    local -i value=${1:-0}
+    local -i maximum=${2:-100}
+    (( maximum <= 0 )) && maximum=1
+    (( value > maximum )) && value=$maximum
+    (( value < 0 )) && value=0
+    local -i percent=$(( (value * 100) / maximum ))
+    if (( percent >= 50 )); then
+        # Green to Yellow
+        printf -v REPLY '%%F{#%02x%02x00}' $(( 255 * (100 - percent) / 50 )) 255
+    else
+        # Yellow to Red
+        printf -v REPLY '%%F{#%02x%02x00}' 255 $(( 255 * percent / 50 ))
+    fi
+}
+
+# Usage: _hero_timer DAY → REPLY = gradient HH:MM:SS until midnight (00:00:00 past day 3)
+function _hero_timer() {
+    local -i day_number=${1:-1}
+    local -i now=${EPOCHSECONDS:-$(date +%s)}
+    local h m s
+    strftime -s h "%H" $now 2>/dev/null || h="00"
+    strftime -s m "%M" $now 2>/dev/null || m="00"
+    strftime -s s "%S" $now 2>/dev/null || s="00"
+    local -i elapsed=$(( 10#$h * 3600 + 10#$m * 60 + 10#$s ))
+    local -i total_seconds=$(( 86400 - elapsed ))
+    
+    # If past the 3-day window, time is up
+    (( day_number > 3 )) && total_seconds=0
+
+    local -i hours=$(( total_seconds / 3600 ))
+    local -i minutes=$(( (total_seconds % 3600) / 60 ))
+    local -i seconds=$(( total_seconds % 60 ))
+    
+    # Smooth dynamic gradients per time component
+    local ch cm cs
+    _hero_tcolor $hours 23;   ch=$REPLY
+    _hero_tcolor $minutes 59; cm=$REPLY
+    _hero_tcolor $seconds 59; cs=$REPLY
+    printf -v REPLY "%s%02d%s:%s%02d%s:%s%02d%s" \
+        "$ch" $hours "%f" "$cm" $minutes "%f" "$cs" $seconds "%f"
+}
+
+# Usage: _hero_box_render TOP BOT NPC EQUIP_ICONS EQUIP_KEYS PROMPT → REPLY = 4-line HUD box
+function _hero_box_render() {
+    setopt local_options extended_glob
+    local hud_top_row="${1%% #}"
+    local hud_bot_row="${2%% #}"
+    local npc_message="${3%% #}"
+    local equip_icons="$4"
+    local equip_keys="$5"
+    local prompt_content="${6%% #}"
+    
+    local BORDER="%F{240}"
+    local RESET="%f"
+    
+    # Line 3: Equipment Icons + Optional Companion Dialogue
+    local line3_content=""
+    if [[ -n "${equip_icons// /}" ]]; then
+        if [[ -n "${npc_message// /}" ]]; then
+            line3_content="${equip_icons}${BORDER} ┬ ${RESET}${npc_message}"
+        else
+            line3_content="${equip_icons}${BORDER} ┬${RESET}"
+        fi
+    elif [[ -n "${npc_message// /}" ]]; then
+        line3_content="${npc_message}"
+    fi
+    
+    # Accurate Visual Column Widths
+    local -i width1 width2 width3
+    _hero_vwidth "$hud_top_row";   width1=$REPLY
+    _hero_vwidth "$hud_bot_row";   width2=$REPLY
+    _hero_vwidth "$line3_content"; width3=$REPLY
+    
+    # Reach from left edge (each prefix "┌ ", "│ ", "├ " is 2 columns)
+    local -i reach1=$(( 2 + width1 ))
+    local -i reach2=$(( 2 + width2 ))
+    local -i reach3=$(( 2 + width3 ))
+    
+    local -i max_reach=$reach1
+    (( reach2 > max_reach )) && max_reach=$reach2
+    (( reach3 > max_reach )) && max_reach=$reach3
+    
+    # Exact paddings to right border
+    local -i pad1=$(( max_reach - reach1 ))
+    local -i pad2=$(( max_reach - reach2 ))
+    local -i pad3=$(( max_reach - reach3 ))
+    
+    local out=""
+    # Line 1: Top stats header row
+    out+="${BORDER}┌ ${RESET}${hud_top_row}${BORDER}${(l:pad1+1::─:):-}┐${RESET}"$'\n'
+    # Line 2: Values row
+    out+="${BORDER}│ ${RESET}${hud_bot_row}${(l:pad2+1:: :):-}${BORDER}│${RESET}"$'\n'
+    # Line 3: Equipment icons + NPC dialogue
+    out+="${BORDER}├ ${RESET}${line3_content}${BORDER}${(l:pad3+1::─:):-}┘${RESET}"$'\n'
+    # Line 4: Equipment keys + Realm interaction prompt
+    if [[ -n "${equip_keys// /}" ]]; then
+        out+="${BORDER}└ ${RESET}${equip_keys}${BORDER} ┘${RESET}${prompt_content}"
+    else
+        out+="${BORDER}└${RESET}${prompt_content}"
+    fi
+    REPLY="$out"
+}
+
 function HeroUI() {
     setopt local_options extended_glob
     local component="$1"; shift
@@ -18,29 +126,9 @@ function HeroUI() {
 
         # Usage: HeroUI timer [day_number]
         timer)
-            local -i day_number=${1:-1}
-            local -i now=${EPOCHSECONDS:-$(date +%s)}
-            local h m s
-            strftime -s h "%H" $now 2>/dev/null || h="00"
-            strftime -s m "%M" $now 2>/dev/null || m="00"
-            strftime -s s "%S" $now 2>/dev/null || s="00"
-            local -i elapsed=$(( 10#$h * 3600 + 10#$m * 60 + 10#$s ))
-            local -i total_seconds=$(( 86400 - elapsed ))
-            
-            # If past the 3-day window, time is up
-            if (( day_number > 3 )); then
-                total_seconds=0
-            fi
-
-            local -i hours=$(( total_seconds / 3600 ))
-            local -i minutes=$(( (total_seconds % 3600) / 60 ))
-            local -i seconds=$(( total_seconds % 60 ))
-            
-            # Smooth dynamic gradients per time component
-            printf "%s%02d%s:%s%02d%s:%s%02d%s" \
-                "$(HeroUI _tcolor $hours 23)" $hours "%f" \
-                "$(HeroUI _tcolor $minutes 59)" $minutes "%f" \
-                "$(HeroUI _tcolor $seconds 59)" $seconds "%f"
+            local REPLY
+            _hero_timer "${1:-1}"
+            print -rn -- "$REPLY"
             ;;
 
         # Usage: HeroUI day [day_number] [color]
@@ -62,18 +150,9 @@ function HeroUI() {
 
         # Internal: Dynamic Gradient Color
         _tcolor)
-            local -i value=${1:-0}
-            local -i maximum=${2:-100}
-            (( value > maximum )) && value=$maximum
-            (( value < 0 )) && value=0
-            local -i percent=$(( (value * 100) / maximum ))
-            if (( percent >= 50 )); then
-                # Green to Yellow
-                printf '%%F{#%02x%02x00}' $(( 255 * (100 - percent) / 50 )) 255
-            else
-                # Yellow to Red
-                printf '%%F{#%02x%02x00}' 255 $(( 255 * percent / 50 ))
-            fi
+            local REPLY
+            _hero_tcolor "$1" "$2"
+            print -rn -- "$REPLY"
             ;;
 
         # Internal: Threshold Color Picker
@@ -104,7 +183,7 @@ function HeroUI() {
             local -i max_content_width=${#label}
             for l in "${lines[@]}"; do
                 [[ -z "$l" ]] && continue
-                local -i lw=$(heroVisualWidth "$l")
+                _hero_vwidth "$l"; local -i lw=$REPLY
                 (( lw > max_content_width )) && max_content_width=$lw
             done
             
@@ -116,7 +195,7 @@ function HeroUI() {
             print -P "${color}╔═${label}$(printf '═%.0s' {1..$dash_count})╗%f"
             for line in "${lines[@]}"; do
                 [[ -z "$line" ]] && continue
-                local -i line_w=$(heroVisualWidth "$line")
+                _hero_vwidth "$line"; local -i line_w=$REPLY
                 local -i pad=$(( w - 2 - line_w ))
                 (( pad < 0 )) && pad=0
                 print -P "${color}║%f ${line}${(l:pad:: :):-} ${color}║%f"
@@ -167,7 +246,7 @@ function HeroUI() {
             
             local -i max_len=30
             for l in "${lines[@]}"; do
-                local -i lw=$(heroVisualWidth "$l")
+                _hero_vwidth "$l"; local -i lw=$REPLY
                 (( lw > max_len )) && max_len=$lw
             done
             
@@ -210,7 +289,7 @@ function HeroUI() {
         location)
             local suffix=""
             [[ ! -w . ]] && suffix=" 🔒"
-            echo "$(print -P "%~")${suffix}"
+            print -r -- "${(%):-%~}${suffix}"
             ;;
 
         room_stats)
@@ -295,65 +374,9 @@ function HeroUI() {
         # Unified Pixel-Perfect HUD Box Renderer
         # ═══════════════════════════════════════════════════════════════════════
         box_render)
-            local hud_top_row="${1%% #}"
-            local hud_bot_row="${2%% #}"
-            local npc_message="${3%% #}"
-            local equip_icons="$4"
-            local equip_keys="$5"
-            local prompt_content="${6%% #}"
-            
-            local BORDER="%F{240}"
-            local RESET="%f"
-            
-            # Line 3: Equipment Icons + Optional Companion Dialogue
-            local line3_content=""
-            if [[ -n "${equip_icons// /}" ]]; then
-                if [[ -n "${npc_message// /}" ]]; then
-                    line3_content="${equip_icons}${BORDER} ┬ ${RESET}${npc_message}"
-                else
-                    line3_content="${equip_icons}${BORDER} ┬${RESET}"
-                fi
-            elif [[ -n "${npc_message// /}" ]]; then
-                line3_content="${npc_message}"
-            fi
-            
-            # Accurate Visual Column Widths
-            local -i width1=$(heroVisualWidth "$hud_top_row")
-            local -i width2=$(heroVisualWidth "$hud_bot_row")
-            local -i width3=$(heroVisualWidth "$line3_content")
-            
-            # Reach from left edge (each prefix "┌ ", "│ ", "├ " is 2 columns)
-            local -i reach1=$(( 2 + width1 ))
-            local -i reach2=$(( 2 + width2 ))
-            local -i reach3=$(( 2 + width3 ))
-            
-            local -i max_reach=$reach1
-            (( reach2 > max_reach )) && max_reach=$reach2
-            (( reach3 > max_reach )) && max_reach=$reach3
-            
-            # Exact paddings to right border
-            local -i pad1=$(( max_reach - reach1 ))
-            local -i pad2=$(( max_reach - reach2 ))
-            local -i pad3=$(( max_reach - reach3 ))
-            (( pad1 < 0 )) && pad1=0
-            (( pad2 < 0 )) && pad2=0
-            (( pad3 < 0 )) && pad3=0
-            
-            # Line 1: Top stats header row
-            print -r -- "${BORDER}┌ ${RESET}${hud_top_row}${BORDER}${(l:pad1+1::─:):-}┐${RESET}"
-            
-            # Line 2: Values row
-            print -r -- "${BORDER}│ ${RESET}${hud_bot_row}${(l:pad2+1:: :):-}${BORDER}│${RESET}"
-            
-            # Line 3: Equipment icons + NPC dialogue
-            print -r -- "${BORDER}├ ${RESET}${line3_content}${BORDER}${(l:pad3+1::─:):-}┘${RESET}"
-            
-            # Line 4: Equipment keys + Realm interaction prompt
-            if [[ -n "${equip_keys// /}" ]]; then
-                print -rn -- "${BORDER}└ ${RESET}${equip_keys}${BORDER} ┘${RESET}${prompt_content}"
-            else
-                print -rn -- "${BORDER}└${RESET}${prompt_content}"
-            fi
+            local REPLY
+            _hero_box_render "$@"
+            print -rn -- "$REPLY"
             ;;
     esac
 }

@@ -50,8 +50,7 @@ function HeroInventory() {
                 icon)
                     local icon="${hero_icons[$item_key]:-${default:-❓}}"
                     if [[ "$item_key" == "key" || "$item_key" == "ladder" || "$item_key" == "sword" || "$item_key" == "shield" ]]; then
-                        local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
-                        (( pad == 1 )) && icon="${icon} "
+                        (( ${HERO_PAD:-1} == 1 )) && icon="${icon} "
                     fi
                     echo "$icon"
                     ;;

@@ -11,15 +11,56 @@ typeset -gx HERO_SLOT_2=""
 typeset -gx HERO_SLOT_3=""
 typeset -gx HERO_SLOT_4=""
 
-# Internal helper to get midnight timestamp for today
-function _hero_get_today_midnight() {
+# Cached heart/emoji padding mode (1 = padded, 0 = Unicode 9+ widths).
+# Read by hot render paths as $HERO_PAD so they never fork a subshell.
+typeset -g HERO_PAD=1
+
+function _hero_load_pad() {
+    local raw=""
+    if [[ -n "$HERO_HEART_PAD" ]]; then
+        raw="$HERO_HEART_PAD"
+    elif [[ -f "$hero_heart_pad_file" ]]; then
+        raw="$(<"$hero_heart_pad_file")"
+    fi
+    [[ "$raw" == "0" ]] && HERO_PAD=0 || HERO_PAD=1
+}
+_hero_load_pad
+
+# Internal helper: midnight timestamp for today (sets REPLY, no subshell)
+function _hero_midnight() {
     local -i now=${EPOCHSECONDS:-$(date +%s)}
     local h m s
     strftime -s h "%H" $now 2>/dev/null || h="00"
     strftime -s m "%M" $now 2>/dev/null || m="00"
     strftime -s s "%S" $now 2>/dev/null || s="00"
     local -i elapsed=$(( 10#$h * 3600 + 10#$m * 60 + 10#$s ))
-    echo $(( now - elapsed ))
+    REPLY=$(( now - elapsed ))
+}
+
+function _hero_get_today_midnight() {
+    local REPLY
+    _hero_midnight
+    echo "$REPLY"
+}
+
+# Internal helper: current day of the 3-day cycle (sets REPLY, no subshell)
+function _hero_cycle_day() {
+    _hero_midnight
+    local -i midnight=$REPLY
+    local -i start_ts=0
+    if [[ -f "$hero_cycle_file" ]]; then
+        local raw="$(<"$hero_cycle_file")"
+        start_ts=${raw//[^0-9]/}
+    fi
+
+    # Missing, corrupt or future start (allow 2h slack for DST shifts) → restart today
+    if (( start_ts <= 0 || start_ts > midnight + 7200 )); then
+        start_ts=$midnight
+        echo "$start_ts" >| "$hero_cycle_file" 2>/dev/null
+    fi
+
+    # Round to the nearest day so 23h/25h DST days don't skew the count
+    REPLY=$(( ((midnight - start_ts + 43200) / 86400) + 1 ))
 }
 
 function HeroState() {
@@ -56,36 +97,27 @@ function HeroState() {
             local op="$1"; shift
             case "$op" in
                 day)
-                    local -i midnight=$(_hero_get_today_midnight)
-                    if [[ ! -f "$hero_cycle_file" ]]; then
-                        echo "$midnight" >| "$hero_cycle_file" 2>/dev/null
-                    fi
-                    
-                    local -i start_ts=0
-                    if [[ -f "$hero_cycle_file" ]]; then
-                        start_ts=$(<"$hero_cycle_file")
-                    fi
-                    
-                    if (( start_ts <= 0 || start_ts > midnight )); then
-                        start_ts=$midnight
-                        echo "$start_ts" >| "$hero_cycle_file" 2>/dev/null
-                    fi
-                    
-                    echo $(( ((midnight - start_ts) / 86400) + 1 ))
+                    local REPLY
+                    _hero_cycle_day
+                    echo "$REPLY"
                     ;;
                 reset)
                     print -P "%F{cyan}🎼 Playing the Song of Time...%f"
-                    if [[ -x "$ZSH_CUSTOM/bin/hero-song-of-time" ]]; then
-                        "$ZSH_CUSTOM/bin/hero-song-of-time"
+                    local song_bin="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/bin/hero-song-of-time"
+                    if [[ -x "$song_bin" ]]; then
+                        "$song_bin"
                     else
                         printf "\a"; sleep 0.2; printf "\a"; sleep 0.2; printf "\a"
                     fi
-                    local -i midnight=$(_hero_get_today_midnight)
-                    echo "$midnight" >| "$hero_cycle_file" 2>/dev/null
+                    local REPLY
+                    _hero_midnight
+                    echo "$REPLY" >| "$hero_cycle_file" 2>/dev/null
                     print -P "%F{green}You have returned to the dawn of the First Day.%f"
                     ;;
                 check)
-                    local -i current_day=$(HeroState cycle day)
+                    local REPLY
+                    _hero_cycle_day
+                    local -i current_day=$REPLY
                     if (( current_day > 3 )); then
                         print -P "\n%F{red}🌑 The Moon has crashed. You've met with a terrible fate, haven't you?%f"
                         print -P "%F{yellow}Play the Song of Time (st) to return to the Dawn of the First Day.%f\n"
@@ -101,7 +133,14 @@ function HeroState() {
                 init)
                     HERO_SLOT_1="" HERO_SLOT_2="" HERO_SLOT_3="" HERO_SLOT_4=""
                     if [[ -f "$hero_slots_file" ]]; then
-                        source "$hero_slots_file" 2>/dev/null
+                        # Parse (don't source) the save file: only accept HERO_SLOT_N="item_key"
+                        local line
+                        local -a match mbegin mend
+                        for line in "${(@f)$(<"$hero_slots_file")}"; do
+                            if [[ "$line" =~ '^HERO_SLOT_([1-4])="([A-Za-z0-9_-]*)"$' ]]; then
+                                typeset -g "HERO_SLOT_${match[1]}=${match[2]}"
+                            fi
+                        done
                     else
                         # Default starting gear: backpack in Slot 1
                         HERO_SLOT_1="backpack"
@@ -312,25 +351,18 @@ function HeroState() {
 
         # Usage: HeroState heart_pad [get|set|toggle|status]
         heart_pad)
-            local op="${1:-get}"; shift
+            local op="${1:-get}"; (( $# )) && shift
             case "$op" in
                 get)
-                    if [[ -n "$HERO_HEART_PAD" ]]; then
-                        echo "$HERO_HEART_PAD"
-                        return
-                    fi
-                    if [[ -f "$hero_heart_pad_file" ]]; then
-                        local raw_val
-                        raw_val="$(<"$hero_heart_pad_file")"
-                        echo "${raw_val:-1}"
-                        return
-                    fi
                     # Default: 1 (padded) for Linux/glibc terminals where wcwidth(❤️)=1
-                    echo "1"
+                    _hero_load_pad
+                    echo "$HERO_PAD"
                     ;;
                 set)
                     local new_state="${1:-1}"
+                    [[ "$new_state" == "0" ]] || new_state=1
                     echo "$new_state" >| "$hero_heart_pad_file" 2>/dev/null
+                    _hero_load_pad
                     ;;
                 toggle)
                     local -i current=$(HeroState heart_pad get)

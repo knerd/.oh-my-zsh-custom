@@ -113,7 +113,7 @@ function test_hud_box_alignment() {
 
     HeroState heart_pad set 1
     HeroState slots persist 2 key
-    precmd >/dev/null 2>&1
+    _hero_precmd >/dev/null 2>&1
 
     local -a lines=("${(@f)PROMPT}")
     local -a boxLines=()
@@ -201,7 +201,7 @@ function test_hud_box_alignment_nongit() {
 
     HeroState heart_pad set 1
     HeroState slots persist 2 key
-    precmd >/dev/null 2>&1
+    _hero_precmd >/dev/null 2>&1
 
     local -a lines=("${(@f)PROMPT}")
     local -a boxLines=()

@@ -12,13 +12,21 @@ typeset -g HERO_NPC_SESSION_FIRST_RUN=1
 function HeroNPC() {
     local action="$1"; shift
     case "$action" in
-        # Usage: HeroNPC set_context exitStatus
+        # Usage: HeroNPC set_context exitStatus [commandRan]
+        # commandRan defaults to a HISTCMD comparison for external callers.
         set_context)
             local -i exit_status=${1:-0}
-            if (( exit_status != 0 )); then
-                export HERO_NPC_ARGS="--error"
-            elif [[ "$HISTCMD" == "$hero_last_histcmd" ]]; then
+            local -i command_ran
+            if [[ -n "$2" ]]; then
+                command_ran=$2
+            else
+                command_ran=$(( HISTCMD != hero_last_histcmd ))
+            fi
+            if (( ! command_ran )); then
+                # Empty <Enter>: $? is stale from the previous command
                 export HERO_NPC_ARGS="--refresh"
+            elif (( exit_status != 0 )); then
+                export HERO_NPC_ARGS="--error"
             fi
             export hero_last_histcmd=$HISTCMD
             ;;
@@ -58,8 +66,9 @@ function HeroNPC() {
         banner)
             local message="$1"
             local width="$2"
-            if [[ "$message" != "--refresh" && -x "$ZSH_CUSTOM/bin/hero-npc" ]]; then
-                "$ZSH_CUSTOM/bin/hero-npc" --width "$width" "$message"
+            local npc_bin="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/bin/hero-npc"
+            if [[ "$message" != "--refresh" && -x "$npc_bin" ]]; then
+                "$npc_bin" --width "$width" "$message"
             fi
             ;;
     esac

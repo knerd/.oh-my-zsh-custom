@@ -65,8 +65,7 @@ alias i="((HERO_HIDE_ITEMS=!HERO_HIDE_ITEMS)); CL;"
 alias c="((HERO_HIDE_CLOCK=!HERO_HIDE_CLOCK)); CL;"
 alias n="((HERO_HIDE_NAVI=!HERO_HIDE_NAVI)); CL;"
 alias i-="((HERO_HIDE_EVERYTHING=!HERO_HIDE_EVERYTHING));((HERO_HIDE_ITEMS=HERO_HIDE_EVERYTHING)); CL;"
-alias snd="HeroState sound"
-alias sound="HeroState sound"
+unalias snd sound 2>/dev/null
 function snd() { HeroState sound "$@"; }
 function sound() { HeroState sound "$@"; }
 

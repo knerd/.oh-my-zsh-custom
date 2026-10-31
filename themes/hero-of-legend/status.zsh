@@ -11,6 +11,7 @@ typeset -g HERO_GIT_REF=""
 typeset -g HERO_GIT_DIRTY=0
 typeset -g HERO_GIT_AHEAD=0
 typeset -g HERO_GIT_BEHIND=0
+typeset -g HERO_GIT_REPO_NAME=""
 
 function HeroStatus() {
     local action="$1"; shift
@@ -22,9 +23,22 @@ function HeroStatus() {
             HERO_GIT_DIRTY=0
             HERO_GIT_AHEAD=0
             HERO_GIT_BEHIND=0
+            HERO_GIT_REPO_NAME=""
             
-            if command git rev-parse --is-inside-work-tree &>/dev/null; then
+            local toplevel
+            if toplevel=$(command git rev-parse --show-toplevel 2>/dev/null) && [[ -n "$toplevel" ]]; then
                 HERO_GIT_IN_REPO=1
+                
+                # Repo name: from origin URL, falling back to the toplevel dir name.
+                # Resolved once per command so the 1s timer tick never spawns git.
+                local remote_url
+                remote_url=$(command git config --get remote.origin.url 2>/dev/null)
+                if [[ -n "$remote_url" ]]; then
+                    local clean_url="${remote_url%.git}"
+                    HERO_GIT_REPO_NAME="${clean_url##*[/:]}"
+                fi
+                [[ -z "$HERO_GIT_REPO_NAME" ]] && HERO_GIT_REPO_NAME="${toplevel:t}"
+                
                 HERO_GIT_REF=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)
                 
                 # Check for dirty working tree or index
@@ -50,23 +64,7 @@ function HeroStatus() {
         # Returns: tri_top|tri_bot|area_icon|area_name
         environment)
             if (( HERO_GIT_IN_REPO )); then
-                local repo_name=""
-                local remote_url
-                remote_url=$(git config --get remote.origin.url 2>/dev/null)
-                
-                if [[ -n "$remote_url" ]]; then
-                    # Extract owner/repo or repo name using parameter expansion
-                    local clean_url="${remote_url%.git}"
-                    repo_name="${clean_url##*[/:]}"
-                fi
-                
-                if [[ -z "$repo_name" ]]; then
-                    local toplevel
-                    toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
-                    repo_name="${toplevel:t}"
-                fi
-                
-                echo "${tri_top_git}|${tri_bot_git}|${hero_areas[dungeon]}|%F{white}${repo_name}%f"
+                echo "${tri_top_git}|${tri_bot_git}|${hero_areas[dungeon]}|%F{white}${HERO_GIT_REPO_NAME}%f"
             else
                 echo "${tri_top_norm}|${tri_bot_norm}|${hero_areas[castle]}|%F{240}%m%f"
             fi
@@ -74,7 +72,7 @@ function HeroStatus() {
 
         # Usage: HeroStatus hearts
         hearts)
-            local -i pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
+            local -i pad=${HERO_PAD:-1}
             local heart_full="❤️"
             (( pad == 1 )) && heart_full="❤️ "
             local heart_empty="🖤"

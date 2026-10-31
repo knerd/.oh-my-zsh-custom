@@ -56,7 +56,8 @@ function heroIsBlank() {
 
 # 4. Pure Zsh Terminal Display Width Calculator
 # Calculates accurate column width on screen for unicode, emojis, and ANSI escapes.
-function heroVisualWidth() {
+# _hero_vwidth sets REPLY (no subshell); heroVisualWidth echoes it for $(...) callers.
+function _hero_vwidth() {
     setopt local_options extended_glob
     local raw="$1"
     
@@ -70,13 +71,17 @@ function heroVisualWidth() {
     local vs16=$'\xef\xb8\x8f'
     expanded="${expanded//$vs16/}"
     
+    # Heart/emoji padding mode (cached global, see _hero_load_pad in state.zsh)
+    local -i current_pad=${HERO_PAD:-1}
+    
     local -i width=0
     local -i len=${#expanded}
-    local -i i=1
+    local -i i=1 code
+    local char
     
     while (( i <= len )); do
-        local char="${expanded[i]}"
-        local -i code=##$char
+        char="${expanded[i]}"
+        code=##$char
         
         # Zero-width codepoints: variation selectors, zero-width spaces
         if (( code == 0xfe0e || code == 0xfe0f || (code >= 0x200b && code <= 0x200f) )); then
@@ -92,7 +97,6 @@ function heroVisualWidth() {
             # Emojis that occupy 1 column on Linux/glibc terminals (key, ladder, map, sword, marker, shield, boomerang, mirror, jar):
             # In padded mode (current_pad == 1), their character code counts as 1 (with space = 2).
             # In unpadded mode (current_pad == 0), they occupy 2 columns directly.
-            local -i current_pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
             (( current_pad == 0 )) && is_wide=1
         elif (( (code >= 0x1F000 && code <= 0x1FAFF) || \
               (code >= 0x2E80 && code <= 0x9FFF) || \
@@ -101,7 +105,6 @@ function heroVisualWidth() {
             is_wide=1
         elif (( code == 0x2764 || code == 0x2665 )); then
             # If heart padding is disabled (Unicode 9+ mode), red heart occupies 2 columns directly
-            local -i current_pad=$(HeroState heart_pad get 2>/dev/null || echo 1)
             (( current_pad == 0 )) && is_wide=1
         fi
 
@@ -113,5 +116,11 @@ function heroVisualWidth() {
         (( i++ ))
     done
     
-    echo "$width"
+    REPLY=$width
+}
+
+function heroVisualWidth() {
+    local REPLY
+    _hero_vwidth "$1"
+    echo "$REPLY"
 }
